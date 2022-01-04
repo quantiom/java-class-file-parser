@@ -10,8 +10,14 @@ void JavaClass::parse() {
 	this->m_major_version = this->read_u2();
 
 	this->parse_constant_pool();
+
+	this->m_access_flags = this->read_u2();
+
+	this->m_this_class_idx = this->read_u2();
+	this->m_super_class_idx = this->read_u2();
 }
 
+// TODO: move to ConstantPool class
 void JavaClass::parse_constant_pool() {
 	const auto constant_pool_count = this->read_u2();
 
