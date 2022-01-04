@@ -142,9 +142,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="parser\ConstantPool.cpp" />
     <ClCompile Include="parser\JavaClass.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="parser\ConstantPool.h" />
+    <ClInclude Include="parser\defines.h" />
     <ClInclude Include="parser\JavaClass.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -21,9 +21,18 @@
     <ClCompile Include="parser\JavaClass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="parser\ConstantPool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="parser\JavaClass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\ConstantPool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\defines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
