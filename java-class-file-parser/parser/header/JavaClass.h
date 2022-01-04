@@ -5,8 +5,9 @@
 
 #include "defines.h"
 #include "ConstantPool.h"
+#include "JavaField.h"
 
-// Oracle Reference: https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.3.3
+// Oracle Reference: https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.1
 
 enum class AccessFlags {
 	ACC_PUBLIC = 0x0001,
@@ -22,16 +23,20 @@ enum class AccessFlags {
 
 class JavaClass {
 public:
-	JavaClass(std::vector<uint8_t> bytes) : m_bytes(bytes) {
+	JavaClass(std::vector<u1> bytes) : m_bytes(bytes) {
 		this->m_constant_pool = ConstantPool();
 		this->m_current_byte_index = 0;
 	};
 
+	// parses the class file
 	void parse();
 
 private:
 	void parse_constant_pool();
+	void parse_interfaces();
+	void parse_fields();
 	
+	// methods for reading bytes from the file
 	u4 read_u4();
 	u2 read_u2();
 	u1 read_u1();
@@ -44,6 +49,9 @@ private:
 	u2 m_minor_version;
 	u2 m_major_version;
 
+	// constant pool wrapper
+	ConstantPool m_constant_pool;
+
 	// access flags for the class (AccessFlags)
 	u2 m_access_flags;
 
@@ -51,8 +59,13 @@ private:
 	u2 m_this_class_idx;
 	u2 m_super_class_idx;
 
-	ConstantPool m_constant_pool;
+	// index of all interfaces this classes implements in the constant pool (to CONSTANT_Class-es)
+	std::vector<u2> m_interfaces;
 
+	// fields
+	std::vector<JavaField> m_fields;
+
+	// bytes of the class file
 	size_t m_current_byte_index;
 	std::vector<u1> m_bytes;
 };

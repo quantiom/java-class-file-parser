@@ -18,21 +18,27 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="parser\JavaClass.cpp">
+    <ClCompile Include="parser\source\JavaClass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="parser\ConstantPool.cpp">
+    <ClCompile Include="parser\source\ConstantPool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="parser\JavaClass.h">
+    <ClInclude Include="parser\header\JavaClass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="parser\ConstantPool.h">
+    <ClInclude Include="parser\header\ConstantPool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="parser\defines.h">
+    <ClInclude Include="parser\header\defines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\header\JavaField.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\header\Attribute.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

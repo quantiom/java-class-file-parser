@@ -1,8 +1,8 @@
 #include <optional>
-#include "JavaClass.h"
+#include "../header/JavaClass.h"
 
 void JavaClass::parse() {
-	if (this->read_u1() != 0xCA || this->read_u1() != 0xFE || this->read_u1() != 0xBA || this->read_u1() != 0xBE) {
+	if (this->read_u4() != 0xCAFEBABE) {
 		throw std::invalid_argument("Invalid java class file. Does not have 0xCAFEBABE magic.");
 	}
 
@@ -11,10 +11,16 @@ void JavaClass::parse() {
 
 	this->parse_constant_pool();
 
+	std::cout << this->m_constant_pool.get_long(9) << '\n';
+
 	this->m_access_flags = this->read_u2();
 
 	this->m_this_class_idx = this->read_u2();
 	this->m_super_class_idx = this->read_u2();
+
+	this->parse_interfaces();
+
+	this->parse_fields();
 }
 
 // TODO: move to ConstantPool class
@@ -55,16 +61,18 @@ void JavaClass::parse_constant_pool() {
 				const auto bytes = (u1*)&value;
 
 				byte_info = { bytes[0], bytes[1], bytes[2], bytes[3] };
+
+				i += 1;
 			} break;
 			case ConstantPoolType::CONSTANT_Long:
 			case ConstantPoolType::CONSTANT_Double: {
-				const auto low_value = this->read_u4();
 				const auto high_value = this->read_u4();
+				const auto low_value = this->read_u4();
 
-				const auto low_bytes = (u1*)&low_value;
 				const auto high_bytes = (u1*)&high_value;
+				const auto low_bytes = (u1*)&low_value;
 
-				byte_info = { low_bytes[0], low_bytes[1], low_bytes[2], low_bytes[3], high_bytes[0], high_bytes[1], high_bytes[2], high_bytes[3] };
+				byte_info = { high_bytes[0], high_bytes[1], high_bytes[2], high_bytes[3], low_bytes[0], low_bytes[1], low_bytes[2], low_bytes[3] };
 			} break;
 			case ConstantPoolType::CONSTANT_Utf8: {
 				const auto length = this->read_u2();
@@ -79,9 +87,39 @@ void JavaClass::parse_constant_pool() {
 
 		if (byte_info.has_value()) {
 			this->m_constant_pool.add_constant(ConstantPoolEntryInfo{ tag, byte_info.value() });
+
+			if ((ConstantPoolType)tag == ConstantPoolType::CONSTANT_Long || (ConstantPoolType)tag == ConstantPoolType::CONSTANT_Double) {
+				this->m_constant_pool.add_constant(ConstantPoolEntryInfo{});
+			}
 		} else {
 			throw std::runtime_error("Error parsing constant pool.");
 		}
+	}
+}
+
+void JavaClass::parse_interfaces() {
+	const auto interfaces_count = this->read_u2();
+
+	for (auto i = 0; i < interfaces_count; i++) {
+		this->m_interfaces.push_back(this->read_u2());
+	}
+}
+
+void JavaClass::parse_fields() {
+	const auto fields_count = this->read_u2();
+
+	for (int i = 0; i < fields_count; i++) {
+		const auto access_flags = this->read_u2();
+		const auto name_index = this->read_u2();
+		const auto descriptor_index = this->read_u2();
+
+		const auto attribute_count = this->read_u2();
+
+		for (int j = 0; j < attribute_count; j++) {
+			
+		}
+
+		break;
 	}
 }
 
@@ -104,11 +142,11 @@ u1 JavaClass::read_u1() {
 }
 
 u4 JavaClass::read_u4(size_t start_idx) {
-	return this->m_bytes[start_idx] + this->m_bytes[start_idx + 1] + this->m_bytes[start_idx + 2] + this->m_bytes[start_idx + 3];
+	return this->m_bytes[start_idx + 3] | (this->m_bytes[start_idx + 2] << 8) | (this->m_bytes[start_idx + 1] << 16) | (this->m_bytes[start_idx] << 24);
 }
 
 u2 JavaClass::read_u2(size_t start_idx) {
-	return this->m_bytes[start_idx] + this->m_bytes[start_idx + 1];
+	return this->m_bytes[start_idx + 1] | (this->m_bytes[start_idx] << 8);
 }
 
 u1 JavaClass::read_u1(size_t idx) {

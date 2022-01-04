@@ -1,4 +1,4 @@
-#include "ConstantPool.h"
+#include "../header/ConstantPool.h"
 
 void ConstantPool::add_constant(ConstantPoolEntryInfo entry) {
 	this->m_constant_pool.push_back(entry);
@@ -63,4 +63,54 @@ ConstantPoolReference ConstantPool::get_reference(size_t idx) {
 	const auto type = this->get_string(name_and_type_entry[2] + name_and_type_entry[3]);
 
 	return { class_index, this->get_string(class_index), name, type };
+}
+
+u4 ConstantPool::get_integer(size_t idx) {
+	auto entry = this->get_entry(idx);
+
+	if (!entry.has_value() || (ConstantPoolType)entry->m_tag != ConstantPoolType::CONSTANT_Integer) {
+		throw std::invalid_argument("Constant pool index is invalid or not an integer.");
+	}
+
+	return *(u4*)entry->m_info.data();
+}
+
+float ConstantPool::get_float(size_t idx) {
+	auto entry = this->get_entry(idx);
+
+	if (!entry.has_value() || (ConstantPoolType)entry->m_tag != ConstantPoolType::CONSTANT_Float) {
+		throw std::invalid_argument("Constant pool index is invalid or not a float.");
+	}
+
+	return *(float*)entry->m_info.data();
+}
+
+// this is pretty bad
+
+double ConstantPool::get_double(size_t idx) {
+	auto entry = this->get_entry(idx);
+
+	if (!entry.has_value() || (ConstantPoolType)entry->m_tag != ConstantPoolType::CONSTANT_Double) {
+		throw std::invalid_argument("Constant pool index is invalid or not a double.");
+	}
+
+	const auto bytes = entry->m_info;
+
+	const std::vector<u1> reordered = { bytes[4], bytes[5], bytes[6], bytes[7], bytes[0], bytes[1], bytes[2], bytes[3] };
+
+	return *(double*)reordered.data();
+}
+
+long long ConstantPool::get_long(size_t idx) {
+	auto entry = this->get_entry(idx);
+
+	if (!entry.has_value() || (ConstantPoolType)entry->m_tag != ConstantPoolType::CONSTANT_Long) {
+		throw std::invalid_argument("Constant pool index is invalid or not a long.");
+	}
+
+	const auto bytes = entry->m_info;
+
+	const std::vector<u1> reordered = { bytes[4], bytes[5], bytes[6], bytes[7], bytes[0], bytes[1], bytes[2], bytes[3] };
+
+	return *(long long*)reordered.data();
 }

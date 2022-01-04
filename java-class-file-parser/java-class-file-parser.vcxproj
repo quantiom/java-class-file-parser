@@ -48,7 +48,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -142,13 +142,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="parser\ConstantPool.cpp" />
-    <ClCompile Include="parser\JavaClass.cpp" />
+    <ClCompile Include="parser\source\ConstantPool.cpp" />
+    <ClCompile Include="parser\source\JavaClass.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="parser\ConstantPool.h" />
-    <ClInclude Include="parser\defines.h" />
-    <ClInclude Include="parser\JavaClass.h" />
+    <ClInclude Include="parser\header\Attribute.h" />
+    <ClInclude Include="parser\header\ConstantPool.h" />
+    <ClInclude Include="parser\header\defines.h" />
+    <ClInclude Include="parser\header\JavaField.h" />
+    <ClInclude Include="parser\header\JavaClass.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

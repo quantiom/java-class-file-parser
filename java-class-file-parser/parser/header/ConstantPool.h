@@ -4,6 +4,8 @@
 #include <vector>
 #include <optional>
 
+// https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.4
+
 enum class ConstantPoolType {
 	CONSTANT_Utf8 = 1,
 	CONSTANT_Integer = 3,
@@ -38,9 +40,15 @@ public:
 	void add_constant(ConstantPoolEntryInfo entry);
 
 	std::optional<ConstantPoolEntryInfo> get_entry(size_t idx);
+
 	std::string get_string(size_t idx);
 	std::string get_method_type(size_t idx);
 	ConstantPoolReference get_reference(size_t idx);
+
+	u4 get_integer(size_t idx);
+	float get_float(size_t idx);
+	double get_double(size_t idx);
+	long long get_long(size_t idx);
 
 private:
 	std::vector<ConstantPoolEntryInfo> m_constant_pool;
