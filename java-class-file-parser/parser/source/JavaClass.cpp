@@ -11,8 +11,6 @@ void JavaClass::parse() {
 
 	this->parse_constant_pool();
 
-	std::cout << this->m_constant_pool.get_long(9) << '\n';
-
 	this->m_access_flags = this->read_u2();
 
 	this->m_this_class_idx = this->read_u2();
