@@ -1,4 +1,4 @@
-#include "../header/ConstantPool.h"
+#include "../../header/utils/ConstantPool.h"
 
 void ConstantPool::add_constant(ConstantPoolEntryInfo entry) {
 	this->m_constant_pool.push_back(entry);
@@ -56,13 +56,25 @@ ConstantPoolReference ConstantPool::get_reference(size_t idx) {
 
 	const auto bytes = entry->m_info;
 
-	const u2 class_index = bytes[0] + bytes[1];
+	const u2 class_index = (bytes[0] << 8) | bytes[1];
+	const u2 name_and_type_index = (bytes[2] << 8) | bytes[3];
 
-	const auto name_and_type_entry = this->get_entry(bytes[2] + bytes[3])->m_info;
-	const auto name = this->get_string(name_and_type_entry[0] + name_and_type_entry[1]);
-	const auto type = this->get_string(name_and_type_entry[2] + name_and_type_entry[3]);
+	return { class_index, name_and_type_index };
+}
 
-	return { class_index, this->get_string(class_index), name, type };
+std::pair<std::string, std::string> ConstantPool::get_name_and_type(size_t idx) {
+	auto entry = this->get_entry(idx);
+
+	if (!entry.has_value() || (ConstantPoolType)entry->m_tag != ConstantPoolType::CONSTANT_NameAndType) {
+		throw std::invalid_argument("Constant pool index is invalid or not a NameAndType.");
+	}
+
+	const auto bytes = entry->m_info;
+
+	const u2 name_index = (bytes[0] << 8) | bytes[1];
+	const u2 descriptor_index = (bytes[2] << 8) | bytes[3];
+
+	return std::make_pair<std::string, std::string>(this->get_string(name_index), this->get_string(descriptor_index));
 }
 
 u4 ConstantPool::get_integer(size_t idx) {

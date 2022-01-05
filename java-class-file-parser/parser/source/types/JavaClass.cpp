@@ -1,5 +1,6 @@
 #include <optional>
-#include "../header/JavaClass.h"
+#include "../../header/types/JavaClass.h"
+#include "../../header/attributes/ConstantValueAttribute.h"
 
 void JavaClass::parse() {
 	if (this->read_u4() != 0xCAFEBABE) {
@@ -17,8 +18,12 @@ void JavaClass::parse() {
 	this->m_super_class_idx = this->read_u2();
 
 	this->parse_interfaces();
-
 	this->parse_fields();
+	this->parse_methods();
+}
+
+ConstantPool JavaClass::get_constant_pool() {
+	return this->m_constant_pool;
 }
 
 // TODO: move to ConstantPool class
@@ -113,57 +118,49 @@ void JavaClass::parse_fields() {
 
 		const auto attribute_count = this->read_u2();
 
-		std::cout << "Field " << this->m_constant_pool.get_string(name_index) << ", type " << this->m_constant_pool.get_string(descriptor_index) << '\n';
+		std::vector<JavaAttribute> attributes;
 
 		for (int j = 0; j < attribute_count; j++) {
 			const auto attribute = this->parse_attribute();
 
 			std::cout << this->m_constant_pool.get_string(attribute.m_name_index) << "\n";
+
+			attributes.push_back(attribute);
 		}
 
-		if (attribute_count != 0) break;
+		this->m_fields.push_back(JavaField{ access_flags, name_index, descriptor_index, attributes });
 	}
 }
 
-Attribute JavaClass::parse_attribute() {
+void JavaClass::parse_methods() {
+	const auto methods_count = this->read_u2();
+
+	for (auto i = 0; i < methods_count; i++) {
+		const auto access_flags = this->read_u2();
+		const auto name_index = this->read_u2();
+		const auto descriptor_index = this->read_u2();
+
+		const auto attribute_count = this->read_u2();
+
+		std::vector<JavaAttribute> attributes;
+
+		for (auto j = 0; j < attribute_count; j++) {
+			attributes.push_back(this->parse_attribute());
+		}
+
+		this->m_methods.push_back(JavaMethod{ access_flags, name_index, descriptor_index, attributes });
+	}
+}
+
+JavaAttribute JavaClass::parse_attribute() {
 	const auto attribute_name_index = this->read_u2();
 	const auto attribute_length = this->read_u4();
 
 	std::vector<u1> attribute_info;
 
-	for (int k = 0; k < attribute_length; k++) {
+	for (auto k = 0; k < attribute_length; k++) {
 		attribute_info.push_back(this->read_u1());
 	}
 
-	return Attribute{ attribute_name_index, attribute_length, attribute_info };
-}
-
-u4 JavaClass::read_u4() {
-	const auto ret = this->read_u4(this->m_current_byte_index);
-	this->m_current_byte_index += 4;
-	return ret;
-}
-
-u2 JavaClass::read_u2() {
-	const auto ret = this->read_u2(this->m_current_byte_index);
-	this->m_current_byte_index += 2;
-	return ret;
-}
-
-u1 JavaClass::read_u1() {
-	const auto ret = this->read_u1(this->m_current_byte_index);
-	this->m_current_byte_index += 1;
-	return ret;
-}
-
-u4 JavaClass::read_u4(size_t start_idx) {
-	return this->m_bytes[start_idx + 3] | (this->m_bytes[start_idx + 2] << 8) | (this->m_bytes[start_idx + 1] << 16) | (this->m_bytes[start_idx] << 24);
-}
-
-u2 JavaClass::read_u2(size_t start_idx) {
-	return this->m_bytes[start_idx + 1] | (this->m_bytes[start_idx] << 8);
-}
-
-u1 JavaClass::read_u1(size_t idx) {
-	return this->m_bytes[idx];
+	return JavaAttribute{ attribute_name_index, attribute_length, attribute_info };
 }

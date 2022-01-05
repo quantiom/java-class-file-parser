@@ -3,10 +3,14 @@
 #include <vector>
 #include <optional>
 
-#include "defines.h"
-#include "ConstantPool.h"
+#include "../defines.h"
+#include "../utils/ByteReader.h"
+#include "../utils/ConstantPool.h"
+
 #include "JavaField.h"
-#include "Attribute.h"
+#include "JavaMethod.h"
+
+#include "../attributes/JavaAttribute.h"
 
 // Oracle Reference: https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.1
 
@@ -22,16 +26,17 @@ enum class AccessFlags {
 	ACC_ENUM = 0x4000,
 };
 
-class JavaClass {
+class JavaClass : public ByteReader {
 public:
-	JavaClass(std::vector<u1> bytes) : m_bytes(bytes) {
+	JavaClass(std::vector<u1> bytes) : ByteReader(bytes) {
 		this->m_constant_pool = ConstantPool();
-		this->m_current_byte_index = 0;
 	};
 
 	// parses the class file
 	void parse();
 
+	// constant pool getter
+	ConstantPool get_constant_pool();
 private:
 	void parse_constant_pool();
 	void parse_interfaces();
@@ -39,16 +44,7 @@ private:
 	void parse_methods();
 
 	// parse an attribute at the current byte index
-	Attribute parse_attribute();
-	
-	// methods for reading bytes from the file
-	u4 read_u4();
-	u2 read_u2();
-	u1 read_u1();
-
-	u4 read_u4(size_t start_idx);
-	u2 read_u2(size_t start_idx);
-	u1 read_u1(size_t idx);
+	JavaAttribute parse_attribute();
 
 	// version the class was compiled for
 	u2 m_minor_version;
@@ -70,7 +66,6 @@ private:
 	// fields
 	std::vector<JavaField> m_fields;
 
-	// bytes of the class file
-	size_t m_current_byte_index;
-	std::vector<u1> m_bytes;
+	// methods
+	std::vector<JavaMethod> m_methods;
 };

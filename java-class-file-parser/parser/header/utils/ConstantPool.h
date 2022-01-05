@@ -1,5 +1,5 @@
 #pragma once
-#include "defines.h"
+#include "../defines.h"
 
 #include <vector>
 #include <optional>
@@ -30,9 +30,7 @@ struct ConstantPoolEntryInfo {
 
 struct ConstantPoolReference {
 	const u2 m_class_index;
-	const std::string m_class_name;
-	const std::string m_name;
-	const std::string m_type;
+	const u2 m_name_and_type_index;
 };
 
 class ConstantPool {
@@ -44,6 +42,7 @@ public:
 	std::string get_string(size_t idx);
 	std::string get_method_type(size_t idx);
 	ConstantPoolReference get_reference(size_t idx);
+	std::pair<std::string, std::string> get_name_and_type(size_t idx);
 
 	u4 get_integer(size_t idx);
 	float get_float(size_t idx);

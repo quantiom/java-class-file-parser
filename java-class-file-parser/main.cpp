@@ -3,7 +3,7 @@
 #include <fstream>
 #include <iterator>
 
-#include "parser/header/JavaClass.h"
+#include "parser/header/types/JavaClass.h"
 
 int main() {
     const std::string file_path = "C:\\Test.class";
