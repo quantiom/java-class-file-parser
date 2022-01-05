@@ -6,6 +6,7 @@
 #include "defines.h"
 #include "ConstantPool.h"
 #include "JavaField.h"
+#include "Attribute.h"
 
 // Oracle Reference: https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.1
 
@@ -35,6 +36,10 @@ private:
 	void parse_constant_pool();
 	void parse_interfaces();
 	void parse_fields();
+	void parse_methods();
+
+	// parse an attribute at the current byte index
+	Attribute parse_attribute();
 	
 	// methods for reading bytes from the file
 	u4 read_u4();

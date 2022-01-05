@@ -113,12 +113,29 @@ void JavaClass::parse_fields() {
 
 		const auto attribute_count = this->read_u2();
 
+		std::cout << "Field " << this->m_constant_pool.get_string(name_index) << ", type " << this->m_constant_pool.get_string(descriptor_index) << '\n';
+
 		for (int j = 0; j < attribute_count; j++) {
-			
+			const auto attribute = this->parse_attribute();
+
+			std::cout << this->m_constant_pool.get_string(attribute.m_name_index) << "\n";
 		}
 
-		break;
+		if (attribute_count != 0) break;
 	}
+}
+
+Attribute JavaClass::parse_attribute() {
+	const auto attribute_name_index = this->read_u2();
+	const auto attribute_length = this->read_u4();
+
+	std::vector<u1> attribute_info;
+
+	for (int k = 0; k < attribute_length; k++) {
+		attribute_info.push_back(this->read_u1());
+	}
+
+	return Attribute{ attribute_name_index, attribute_length, attribute_info };
 }
 
 u4 JavaClass::read_u4() {
