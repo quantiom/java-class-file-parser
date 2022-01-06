@@ -14,8 +14,6 @@ struct JavaField : public JavaType {
 			
 			if (attribute_name == "Deprecated") {
 				this->m_deprecated = true;
-			} else if (attribute_name == "Synthetic") {
-				this->m_synthetic = true;
 			}
 		}
 	};
@@ -39,9 +37,8 @@ struct JavaField : public JavaType {
 	// only works if the field is final
 	size_t get_constant_value_index();
 
-	std::vector<JavaAnnotation*> get_annotations();
+	const std::vector<JavaAnnotation*> get_annotations();
 
 private:
 	bool m_deprecated = false;
-	bool m_synthetic = false;
 };

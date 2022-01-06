@@ -11,6 +11,7 @@ struct RuntimeAnnotationsAttribute : public AnnotationAttributeParser {
 		: AnnotationAttributeParser(java_class, attribute) {};
 
 	RuntimeAnnotationsAttribute* parse();
+	std::vector<u1> get_bytes();
 
 	// annotations
 	std::vector<JavaAnnotation*> m_annotations;

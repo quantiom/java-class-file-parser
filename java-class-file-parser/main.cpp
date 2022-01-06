@@ -16,7 +16,7 @@ int main() {
 
     for (const auto& field : java_class.get_fields()) {
         if (field->is_deprecated()) {
-            std::cout << "Setting " << field->get_name() << field->get_descriptor() << " to not be deprecated" << "\n";
+            std::cout << "Setting " << field->get_name() << " to not be deprecated" << "\n";
             field->set_deprecated(false);
         }
     }
