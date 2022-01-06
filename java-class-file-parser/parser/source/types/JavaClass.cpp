@@ -1,6 +1,6 @@
 #include <optional>
 #include "../../header/types/JavaClass.h"
-#include "../../header/attributes/ConstantValueAttribute.h"
+#include "../../header/attributes/RuntimeVisibleAnnotationsAttribute.h"
 
 void JavaClass::parse() {
 	if (this->read_u4() != 0xCAFEBABE) {
@@ -10,6 +10,7 @@ void JavaClass::parse() {
 	this->m_minor_version = this->read_u2();
 	this->m_major_version = this->read_u2();
 
+	std::cout << "Constant Pool: " << std::endl;
 	this->parse_constant_pool();
 
 	this->m_access_flags = this->read_u2();
@@ -43,11 +44,15 @@ void JavaClass::parse_constant_pool() {
 				const auto class_index = this->read_u2();
 				const auto name_and_type_index = this->read_u2();
 				
+				std::cout << i << ": Reference" << "\n";
+				
 				byte_info = { (u1)(class_index >> 8), (u1)class_index, (u1)(name_and_type_index >> 8), (u1)name_and_type_index };
 			} break;
 			case ConstantPoolType::CONSTANT_MethodHandle: {
 				const auto reference_kind = this->read_u1();
 				const auto reference_index = this->read_u2();
+
+				std::cout << i << ": Method Handle" << "\n";
 
 				byte_info = { reference_kind, (u1)(reference_index >> 8), (u1)reference_index };
 			} break;
@@ -56,6 +61,8 @@ void JavaClass::parse_constant_pool() {
 			case ConstantPoolType::CONSTANT_String: {
 				const auto name_index = this->read_u2();
 
+				std::cout << i << ": Class, String, or MethodType" << "\n";
+
 				byte_info = { (u1)(name_index >> 8), (u1)name_index };
 			} break;
 			case ConstantPoolType::CONSTANT_Integer:
@@ -63,9 +70,9 @@ void JavaClass::parse_constant_pool() {
 				const auto value = this->read_u4();
 				const auto bytes = (u1*)&value;
 
-				byte_info = { bytes[0], bytes[1], bytes[2], bytes[3] };
+				std::cout << i << ": Int/Float" << "\n";
 
-				i += 1;
+				byte_info = { bytes[0], bytes[1], bytes[2], bytes[3] };
 			} break;
 			case ConstantPoolType::CONSTANT_Long:
 			case ConstantPoolType::CONSTANT_Double: {
@@ -75,10 +82,14 @@ void JavaClass::parse_constant_pool() {
 				const auto high_bytes = (u1*)&high_value;
 				const auto low_bytes = (u1*)&low_value;
 
+				std::cout << i << ": Long/Double" << "\n";
+
 				byte_info = { high_bytes[0], high_bytes[1], high_bytes[2], high_bytes[3], low_bytes[0], low_bytes[1], low_bytes[2], low_bytes[3] };
 			} break;
 			case ConstantPoolType::CONSTANT_Utf8: {
 				const auto length = this->read_u2();
+
+				std::cout << i << ": UTF8" << "\n";
 				
 				byte_info = { (u1)(length >> 8), (u1)length };
 
@@ -122,8 +133,13 @@ void JavaClass::parse_fields() {
 
 		for (int j = 0; j < attribute_count; j++) {
 			const auto attribute = this->parse_attribute();
+			const auto attribute_name = this->m_constant_pool.get_string(attribute.m_name_index);
 
-			std::cout << this->m_constant_pool.get_string(attribute.m_name_index) << "\n";
+			std::cout << "attribute name: " << attribute_name << "\n";
+
+			if (attribute_name == "RuntimeInvisibleAnnotations") {
+				RuntimeVisibleAnnotationsAttribute(this, attribute).parse();
+			}
 
 			attributes.push_back(attribute);
 		}

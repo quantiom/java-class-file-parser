@@ -15,16 +15,12 @@ struct JavaAttribute {
 
 class BaseAttributeParser : public JavaAttribute, public ByteReader {
 public:
-	BaseAttributeParser(const JavaAttribute attribute, JavaClass* java_class) 
-		: m_java_class(java_class), ByteReader(attribute.m_info) {
+	BaseAttributeParser(JavaClass* java_class, const JavaAttribute attribute) 
+		: ByteReader(java_class, attribute.m_info) {
 		this->m_name_index = attribute.m_name_index;
 		this->m_length = attribute.m_length;
 		this->m_info = attribute.m_info;
 	};
 
-	BaseAttributeParser(JavaClass* java_class) 
-		: m_java_class(java_class), ByteReader(this->m_info) {};
-
-protected:
-	JavaClass* m_java_class;
+	BaseAttributeParser(JavaClass* java_class) : ByteReader(java_class, this->m_info) {};
 };

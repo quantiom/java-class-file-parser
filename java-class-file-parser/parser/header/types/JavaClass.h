@@ -28,7 +28,7 @@ enum class AccessFlags {
 
 class JavaClass : public ByteReader {
 public:
-	JavaClass(std::vector<u1> bytes) : ByteReader(bytes) {
+	JavaClass(std::vector<u1> bytes) : ByteReader(this, bytes) {
 		this->m_constant_pool = ConstantPool();
 	};
 

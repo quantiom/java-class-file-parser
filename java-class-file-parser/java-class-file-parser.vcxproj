@@ -48,7 +48,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -142,15 +142,24 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="parser\source\ConstantPool.cpp" />
-    <ClCompile Include="parser\source\JavaClass.cpp" />
+    <ClCompile Include="parser\source\attributes\AnnotationAttributeParser.cpp" />
+    <ClCompile Include="parser\source\attributes\ConstantValueAttribute.cpp" />
+    <ClCompile Include="parser\source\attributes\RuntimeVisibleAnnotationsAttribute.cpp" />
+    <ClCompile Include="parser\source\types\ConstantPool.cpp" />
+    <ClCompile Include="parser\source\types\JavaClass.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="parser\header\Attribute.h" />
-    <ClInclude Include="parser\header\ConstantPool.h" />
+    <ClInclude Include="parser\header\attributes\AnnotationAttributeParser.h" />
+    <ClInclude Include="parser\header\attributes\ConstantValueAttribute.h" />
+    <ClInclude Include="parser\header\attributes\JavaAttribute.h" />
+    <ClInclude Include="parser\header\attributes\RuntimeVisibleAnnotationsAttribute.h" />
     <ClInclude Include="parser\header\defines.h" />
-    <ClInclude Include="parser\header\JavaField.h" />
-    <ClInclude Include="parser\header\JavaClass.h" />
+    <ClInclude Include="parser\header\types\JavaAnnotation.h" />
+    <ClInclude Include="parser\header\types\JavaClass.h" />
+    <ClInclude Include="parser\header\types\JavaField.h" />
+    <ClInclude Include="parser\header\types\JavaMethod.h" />
+    <ClInclude Include="parser\header\utils\ByteReader.h" />
+    <ClInclude Include="parser\header\utils\ConstantPool.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

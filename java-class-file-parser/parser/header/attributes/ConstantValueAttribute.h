@@ -1,10 +1,9 @@
 #pragma once
 #include "JavaAttribute.h"
-#include "../types/JavaClass.h"
 
 struct ConstantValueAttribute : public BaseAttributeParser {
-	ConstantValueAttribute(const JavaAttribute attribute, JavaClass* java_class) 
-		: BaseAttributeParser(attribute, java_class) {};
+	ConstantValueAttribute(JavaClass* java_class, const JavaAttribute attribute)
+		: BaseAttributeParser(java_class, attribute) {};
 
 	ConstantValueAttribute* parse();
 

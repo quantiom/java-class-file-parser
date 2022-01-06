@@ -18,27 +18,54 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="parser\source\JavaClass.cpp">
+    <ClCompile Include="parser\source\attributes\ConstantValueAttribute.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="parser\source\ConstantPool.cpp">
+    <ClCompile Include="parser\source\types\JavaClass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="parser\source\types\ConstantPool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="parser\source\attributes\RuntimeVisibleAnnotationsAttribute.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="parser\source\attributes\AnnotationAttributeParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="parser\header\JavaClass.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="parser\header\ConstantPool.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="parser\header\defines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="parser\header\JavaField.h">
+    <ClInclude Include="parser\header\attributes\ConstantValueAttribute.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="parser\header\Attribute.h">
+    <ClInclude Include="parser\header\attributes\JavaAttribute.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\header\attributes\RuntimeVisibleAnnotationsAttribute.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\header\types\JavaClass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\header\types\JavaField.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\header\types\JavaMethod.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\header\utils\ByteReader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\header\utils\ConstantPool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\header\types\JavaAnnotation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\header\attributes\AnnotationAttributeParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
