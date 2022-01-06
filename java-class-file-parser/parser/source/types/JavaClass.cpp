@@ -129,11 +129,11 @@ void JavaClass::parse_fields() {
 
 		const auto attribute_count = this->read_u2();
 
-		std::vector<JavaAttribute> attributes;
+		std::vector<JavaAttribute*> attributes;
 
 		for (int j = 0; j < attribute_count; j++) {
 			const auto attribute = this->parse_attribute();
-			const auto attribute_name = this->m_constant_pool.get_string(attribute.m_name_index);
+			const auto attribute_name = this->m_constant_pool.get_string(attribute->m_name_index);
 
 			std::cout << "attribute name: " << attribute_name << "\n";
 
@@ -144,7 +144,7 @@ void JavaClass::parse_fields() {
 			attributes.push_back(attribute);
 		}
 
-		this->m_fields.push_back(JavaField{ access_flags, name_index, descriptor_index, attributes });
+		this->m_fields.push_back(new JavaField(this, access_flags, name_index, descriptor_index, attributes));
 	}
 }
 
@@ -158,7 +158,7 @@ void JavaClass::parse_methods() {
 
 		const auto attribute_count = this->read_u2();
 
-		std::vector<JavaAttribute> attributes;
+		std::vector<JavaAttribute*> attributes;
 
 		for (auto j = 0; j < attribute_count; j++) {
 			attributes.push_back(this->parse_attribute());
@@ -168,7 +168,7 @@ void JavaClass::parse_methods() {
 	}
 }
 
-JavaAttribute JavaClass::parse_attribute() {
+JavaAttribute* JavaClass::parse_attribute() {
 	const auto attribute_name_index = this->read_u2();
 	const auto attribute_length = this->read_u4();
 
@@ -178,5 +178,5 @@ JavaAttribute JavaClass::parse_attribute() {
 		attribute_info.push_back(this->read_u1());
 	}
 
-	return JavaAttribute{ attribute_name_index, attribute_length, attribute_info };
+	return new JavaAttribute(this, attribute_name_index, attribute_length, attribute_info);
 }

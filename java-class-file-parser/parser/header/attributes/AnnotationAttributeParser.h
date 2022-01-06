@@ -4,10 +4,8 @@
 
 class AnnotationAttributeParser : public BaseAttributeParser {
 public:
-	AnnotationAttributeParser(JavaClass* java_class, const JavaAttribute attribute)
+	AnnotationAttributeParser(JavaClass* java_class, JavaAttribute* attribute)
 		: BaseAttributeParser(java_class, attribute) {};
-
-	AnnotationAttributeParser(JavaClass* java_class) : BaseAttributeParser(java_class) {};
 
 	// parse an annotation at the current byte index
 	JavaAnnotation* parse_annotation();

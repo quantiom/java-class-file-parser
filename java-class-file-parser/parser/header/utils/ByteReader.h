@@ -1,12 +1,13 @@
 #pragma once
 #include "../defines.h"
+#include "../types/JavaType.h"
 #include <vector>
 
 class JavaClass;
 
-class ByteReader {
+class ByteReader : public JavaType {
 public:
-	ByteReader(JavaClass* java_class, std::vector<u1> bytes) : m_bytes(bytes), m_java_class(java_class) {
+	ByteReader(JavaClass* java_class, std::vector<u1> bytes) : JavaType(java_class), m_bytes(bytes) {
 		this->m_current_byte_index = 0;
 	};
 
@@ -42,9 +43,6 @@ public:
 	}
 
 protected:
-	// java class instance
-	JavaClass* m_java_class;
-
 	// bytes of the class file
 	size_t m_current_byte_index;
 	std::vector<u1> m_bytes;

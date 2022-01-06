@@ -8,5 +8,5 @@ struct JavaMethod {
 	u2 m_access_flags;
 	u2 m_name_index;
 	u2 m_descriptor_index;
-	std::vector<JavaAttribute> m_attributes;
+	std::vector<JavaAttribute*> m_attributes;
 };

@@ -2,11 +2,12 @@
 #include <vector>
 
 #include "../defines.h"
+#include "JavaType.h"
 
 // https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.3
 
 struct JavaAnnotation;
-class AnnotationElementValue;
+struct AnnotationElementValue;
 
 struct AnnotationElementValue {
 	AnnotationElementValue(u1 tag) : m_tag(tag) {};
@@ -51,7 +52,10 @@ struct AnnotationElementValue {
 	}
 };
 
-struct JavaAnnotation {
+struct JavaAnnotation : public JavaType {
+	JavaAnnotation(JavaClass* java_class, u2 type_index, std::vector<std::pair<u2, AnnotationElementValue*>> element_value_pairs)
+		: JavaType(java_class), m_type_index(type_index), m_element_value_pairs(element_value_pairs) {};
+
 	u2 m_type_index;
 
 	// descriptor index - element value

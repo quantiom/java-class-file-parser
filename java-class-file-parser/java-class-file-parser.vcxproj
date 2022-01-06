@@ -158,6 +158,7 @@
     <ClInclude Include="parser\header\types\JavaClass.h" />
     <ClInclude Include="parser\header\types\JavaField.h" />
     <ClInclude Include="parser\header\types\JavaMethod.h" />
+    <ClInclude Include="parser\header\types\JavaType.h" />
     <ClInclude Include="parser\header\utils\ByteReader.h" />
     <ClInclude Include="parser\header\utils\ConstantPool.h" />
   </ItemGroup>

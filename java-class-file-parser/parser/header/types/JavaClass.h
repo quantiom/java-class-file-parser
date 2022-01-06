@@ -44,7 +44,7 @@ private:
 	void parse_methods();
 
 	// parse an attribute at the current byte index
-	JavaAttribute parse_attribute();
+	JavaAttribute* parse_attribute();
 
 	// version the class was compiled for
 	u2 m_minor_version;
@@ -64,7 +64,7 @@ private:
 	std::vector<u2> m_interfaces;
 
 	// fields
-	std::vector<JavaField> m_fields;
+	std::vector<JavaField*> m_fields;
 
 	// methods
 	std::vector<JavaMethod> m_methods;

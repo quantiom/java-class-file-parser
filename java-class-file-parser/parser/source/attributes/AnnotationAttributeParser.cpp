@@ -14,7 +14,7 @@ JavaAnnotation* AnnotationAttributeParser::parse_annotation() {
 		element_value_pairs.push_back(std::make_pair<>(element_name_index, element_value));
 	}
 
-	return new JavaAnnotation{ type_index, element_value_pairs };
+	return new JavaAnnotation(this->m_java_class, type_index, element_value_pairs);
 }
 
 AnnotationElementValue* AnnotationAttributeParser::parse_element_value() {

@@ -2,7 +2,7 @@
 #include "JavaAttribute.h"
 
 struct ConstantValueAttribute : public BaseAttributeParser {
-	ConstantValueAttribute(JavaClass* java_class, const JavaAttribute attribute)
+	ConstantValueAttribute(JavaClass* java_class, JavaAttribute* attribute)
 		: BaseAttributeParser(java_class, attribute) {};
 
 	ConstantValueAttribute* parse();
