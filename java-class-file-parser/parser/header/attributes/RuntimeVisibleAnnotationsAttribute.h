@@ -10,5 +10,5 @@ struct RuntimeVisibleAnnotationsAttribute : public AnnotationAttributeParser {
 	RuntimeVisibleAnnotationsAttribute* parse();
 
 	// annotations
-	std::vector<JavaAnnotation> m_annotations;
+	std::vector<JavaAnnotation*> m_annotations;
 };

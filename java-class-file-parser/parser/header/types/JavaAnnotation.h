@@ -1,14 +1,19 @@
 #pragma once
 #include <vector>
-#include <map>
 
 #include "../defines.h"
 
 // https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.3
 
 struct JavaAnnotation;
+class AnnotationElementValue;
 
-union AnnotationElementValueUnion {
+struct AnnotationElementValue {
+	AnnotationElementValue(u1 tag) : m_tag(tag) {};
+	
+	u1 m_tag;
+	
+	// only of these values are used
 	u2 m_const_value_index;
 
 	struct {
@@ -21,19 +26,34 @@ union AnnotationElementValueUnion {
 	std::vector<JavaAnnotation*> m_annotation_value;
 
 	struct {
-		std::vector<AnnotationElementValue> m_element_values;
+		std::vector<AnnotationElementValue*> m_element_values;
 	} m_array_value;
-};
 
-struct AnnotationElementValue {
-	u1 m_tag;
-	AnnotationElementValueUnion m_value;
+	bool is_const_value() {
+		const std::vector<char> const_value_tags = { 'B', 'C', 'D', 'F', 'I', 'J', 'S', 'Z', 's' };
+		return std::find(const_value_tags.begin(), const_value_tags.end(), this->m_tag) != const_value_tags.end();
+	}
+
+	bool is_enum_const() {
+		return this->m_tag == 'e';
+	}
+
+	bool is_class_info_index() {
+		return this->m_tag == 'c';
+	}
+
+	bool is_annotation_value() {
+		return this->m_tag == '@';
+	}
+
+	bool is_array_value() {
+		return this->m_tag == '[';
+	}
 };
 
 struct JavaAnnotation {
 	u2 m_type_index;
-	u2 m_num_element_value_pairs;
 
 	// descriptor index - element value
-	std::map<u2, AnnotationElementValue*> m_element_value_pairs;
+	std::vector<std::pair<u2, AnnotationElementValue*>> m_element_value_pairs;
 };
