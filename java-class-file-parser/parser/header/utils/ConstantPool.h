@@ -4,6 +4,8 @@
 #include <vector>
 #include <optional>
 
+#include <unordered_map>
+
 // https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.4
 
 enum class ConstantPoolType {
@@ -49,6 +51,8 @@ public:
 	double get_double(size_t idx);
 	long long get_long(size_t idx);
 
+	size_t get_or_add_utf8(std::string str);
 private:
+	std::unordered_map<std::string, size_t> m_cached_strings;
 	std::vector<ConstantPoolEntryInfo> m_constant_pool;
 };

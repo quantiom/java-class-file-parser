@@ -14,6 +14,12 @@ struct JavaAttribute : public ByteReader {
 	u2 m_name_index;
 	u4 m_length;
 	std::vector<u1> m_info;
+
+	//
+
+	std::string get_name() {
+		return this->m_java_class->get_constant_pool().get_string(this->m_name_index);
+	}
 };
 
 struct BaseAttributeParser : public JavaAttribute {

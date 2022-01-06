@@ -126,3 +126,24 @@ long long ConstantPool::get_long(size_t idx) {
 
 	return *(long long*)reordered.data();
 }
+
+size_t ConstantPool::get_or_add_utf8(std::string str) {
+	if (this->m_cached_strings.contains(str)) {
+		return this->m_cached_strings.at(str);
+	}
+
+	for (size_t i = 0; i < this->m_constant_pool.size(); i++) {
+		const auto entry = this->m_constant_pool.at(i);
+
+		if ((ConstantPoolType)entry.m_tag == ConstantPoolType::CONSTANT_Utf8) {
+			if (this->get_string(i) == str) {
+				this->m_cached_strings[str] = i;
+				return i;
+			}
+		}
+	}
+
+	std::vector<u1> info;
+
+	this->m_constant_pool.push_back(ConstantPoolEntryInfo{ (int)ConstantPoolType::CONSTANT_Utf8, info });
+}
