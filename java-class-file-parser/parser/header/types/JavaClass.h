@@ -35,13 +35,21 @@ public:
 	// parses the class file
 	void parse();
 
-	// constant pool getter
+	// get the bytes of the class file (including modifications made)
+	std::vector<u1> get_bytes();
+
+	// getters
 	ConstantPool get_constant_pool();
+	std::vector<JavaField*> get_fields();
+	std::vector<JavaMethod*> get_methods();
+	std::vector<JavaAttribute*> get_class_attributes();
+
 private:
 	void parse_constant_pool();
 	void parse_interfaces();
 	void parse_fields();
 	void parse_methods();
+	void parse_attributes();
 
 	// parse an attribute at the current byte index
 	JavaAttribute* parse_attribute();
@@ -67,5 +75,8 @@ private:
 	std::vector<JavaField*> m_fields;
 
 	// methods
-	std::vector<JavaMethod> m_methods;
+	std::vector<JavaMethod*> m_methods;
+
+	// class attributes
+	std::vector<JavaAttribute*> m_class_attributes;
 };

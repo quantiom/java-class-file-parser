@@ -11,7 +11,7 @@ public:
 		this->m_current_byte_index = 0;
 	};
 
-	// methods for reading bytes from the file
+	// methods for reading bytes from the vector
 	u4 read_u4() {
 		const auto ret = this->read_u4(this->m_current_byte_index);
 		this->m_current_byte_index += 4;
@@ -43,7 +43,7 @@ public:
 	}
 
 protected:
-	// bytes of the class file
+	// bytes
 	size_t m_current_byte_index;
 	std::vector<u1> m_bytes;
 };

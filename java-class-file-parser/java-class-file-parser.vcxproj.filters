@@ -80,5 +80,8 @@
     <ClInclude Include="parser\header\types\JavaType.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="parser\header\utils\ByteWriter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

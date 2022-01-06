@@ -1,5 +1,6 @@
 #include <optional>
 #include "../../header/types/JavaClass.h"
+#include "../../header/utils/ByteWriter.h"
 #include "../../header/attributes/RuntimeAnnotationsAttribute.h"
 
 void JavaClass::parse() {
@@ -21,10 +22,88 @@ void JavaClass::parse() {
 	this->parse_interfaces();
 	this->parse_fields();
 	this->parse_methods();
+	this->parse_attributes();
+}
+
+std::vector<u1> JavaClass::get_bytes() {
+	// create new ByteWriter
+	std::unique_ptr<ByteWriter> writer(new ByteWriter());
+
+	// magic
+	writer->write_u4(0xCAFEBABE);
+
+	// version
+	writer->write_u2(this->m_minor_version);
+	writer->write_u2(this->m_major_version);
+
+	// constant pool
+	writer->write_u2(this->m_constant_pool.get_size() + 1);
+
+	for (const auto& entry : this->m_constant_pool.get_entries()) {
+		if (entry.m_tag == 0xFF) continue; // fake element to pad double/long
+
+		writer->write_u1(entry.m_tag);
+
+		for (auto i = 0; i < entry.m_info.size(); i++) {
+			writer->write_u1(entry.m_info[i]);
+		}
+	}
+
+	// access flags
+	writer->write_u2(this->m_access_flags);
+
+	// this & super class
+	writer->write_u2(this->m_this_class_idx);
+	writer->write_u2(this->m_super_class_idx);
+
+	// interfaces
+	writer->write_u2(this->m_interfaces.size());
+
+	for (const auto& interface : this->m_interfaces) {
+		writer->write_u2(interface);
+	}
+
+	// fields
+	writer->write_u2(this->m_fields.size());
+
+	for (const auto& field : this->m_fields) {
+		writer->write_u2(field->m_access_flags);
+		writer->write_u2(field->m_name_index);
+		writer->write_u2(field->m_descriptor_index);
+		writer->write_attributes(field->m_attributes);
+	}
+
+	// methods
+	writer->write_u2(this->m_methods.size());
+
+	for (const auto& method : this->m_methods) {
+		writer->write_u2(method->m_access_flags);
+		writer->write_u2(method->m_name_index);
+		writer->write_u2(method->m_descriptor_index);
+		writer->write_attributes(method->m_attributes);
+	}
+
+	// class attributes
+	writer->write_attributes(this->m_class_attributes);
+
+	// return the written bytes
+	return writer->m_bytes;
 }
 
 ConstantPool JavaClass::get_constant_pool() {
 	return this->m_constant_pool;
+}
+
+std::vector<JavaField*> JavaClass::get_fields() {
+	return this->m_fields;
+}
+
+std::vector<JavaMethod*> JavaClass::get_methods() {
+	return this->m_methods;
+}
+
+std::vector<JavaAttribute*> JavaClass::get_class_attributes() {
+	return this->m_class_attributes;
 }
 
 // TODO: move to ConstantPool class
@@ -72,7 +151,7 @@ void JavaClass::parse_constant_pool() {
 
 				std::cout << i << ": Int/Float" << "\n";
 
-				byte_info = { bytes[0], bytes[1], bytes[2], bytes[3] };
+				byte_info = { bytes[3], bytes[2], bytes[1], bytes[0] };
 			} break;
 			case ConstantPoolType::CONSTANT_Long:
 			case ConstantPoolType::CONSTANT_Double: {
@@ -84,7 +163,7 @@ void JavaClass::parse_constant_pool() {
 
 				std::cout << i << ": Long/Double" << "\n";
 
-				byte_info = { high_bytes[0], high_bytes[1], high_bytes[2], high_bytes[3], low_bytes[0], low_bytes[1], low_bytes[2], low_bytes[3] };
+				byte_info = { high_bytes[3], high_bytes[2], high_bytes[1], high_bytes[0], low_bytes[3], low_bytes[2], low_bytes[1], low_bytes[0] };
 
 				i += 1;
 			} break;
@@ -105,7 +184,7 @@ void JavaClass::parse_constant_pool() {
 			this->m_constant_pool.add_constant(ConstantPoolEntryInfo{ tag, byte_info.value() });
 
 			if ((ConstantPoolType)tag == ConstantPoolType::CONSTANT_Long || (ConstantPoolType)tag == ConstantPoolType::CONSTANT_Double) {
-				this->m_constant_pool.add_constant(ConstantPoolEntryInfo{});
+				this->m_constant_pool.add_constant(ConstantPoolEntryInfo{ (u1)0xFF, {} });
 			}
 		} else {
 			throw std::runtime_error("Error parsing constant pool.");
@@ -157,7 +236,15 @@ void JavaClass::parse_methods() {
 			attributes.push_back(this->parse_attribute());
 		}
 
-		this->m_methods.push_back(JavaMethod{ access_flags, name_index, descriptor_index, attributes });
+		this->m_methods.push_back(new JavaMethod(this, access_flags, name_index, descriptor_index, attributes));
+	}
+}
+
+void JavaClass::parse_attributes() {
+	const auto attributes_count = this->read_u2();
+
+	for (auto i = 0; i < attributes_count; i++) {
+		this->m_class_attributes.push_back(this->parse_attribute());
 	}
 }
 

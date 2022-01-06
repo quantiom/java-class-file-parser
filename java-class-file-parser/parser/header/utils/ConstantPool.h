@@ -46,6 +46,7 @@ public:
 	ConstantPoolReference get_reference(size_t idx);
 	std::pair<std::string, std::string> get_name_and_type(size_t idx);
 
+	// TODO: test these after the previous changes
 	u4 get_integer(size_t idx);
 	float get_float(size_t idx);
 	double get_double(size_t idx);
@@ -54,7 +55,10 @@ public:
 	// gets the index of a UTF8 string from the constant pool
 	// or adds it if it does not exist
 	size_t get_or_add_utf8(std::string str);
+
+	std::vector<ConstantPoolEntryInfo> get_entries();
+	size_t get_size();
 private:
 	std::unordered_map<std::string, size_t> m_cached_strings;
-	std::vector<ConstantPoolEntryInfo> m_constant_pool;
+	std::vector<ConstantPoolEntryInfo> m_entries;
 };

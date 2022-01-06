@@ -1,12 +1,12 @@
 #include "../../header/utils/ConstantPool.h"
 
 void ConstantPool::add_constant(ConstantPoolEntryInfo entry) {
-	this->m_constant_pool.push_back(entry);
+	this->m_entries.push_back(entry);
 }
 
 std::optional<ConstantPoolEntryInfo> ConstantPool::get_entry(size_t idx) {
-	if (idx > 0 && idx < this->m_constant_pool.size() + 1) {
-		return this->m_constant_pool.at(idx - 1);
+	if (idx > 0 && idx < this->m_entries.size() + 1) {
+		return this->m_entries.at(idx - 1);
 	}
 
 	return {};
@@ -84,7 +84,10 @@ u4 ConstantPool::get_integer(size_t idx) {
 		throw std::invalid_argument("Constant pool index is invalid or not an integer.");
 	}
 
-	return *(u4*)entry->m_info.data();
+	const auto bytes = entry->m_info;
+	const std::vector<u1> backwards = { bytes[3], bytes[2], bytes[1], bytes[0] };
+
+	return *(u4*)backwards.data();
 }
 
 float ConstantPool::get_float(size_t idx) {
@@ -94,10 +97,11 @@ float ConstantPool::get_float(size_t idx) {
 		throw std::invalid_argument("Constant pool index is invalid or not a float.");
 	}
 
-	return *(float*)entry->m_info.data();
-}
+	const auto bytes = entry->m_info;
+	const std::vector<u1> backwards = { bytes[3], bytes[2], bytes[1], bytes[0] };
 
-// this is pretty bad
+	return *(u4*)backwards.data();
+}
 
 double ConstantPool::get_double(size_t idx) {
 	auto entry = this->get_entry(idx);
@@ -107,8 +111,7 @@ double ConstantPool::get_double(size_t idx) {
 	}
 
 	const auto bytes = entry->m_info;
-
-	const std::vector<u1> reordered = { bytes[4], bytes[5], bytes[6], bytes[7], bytes[0], bytes[1], bytes[2], bytes[3] };
+	const std::vector<u1> reordered = { bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0] };
 
 	return *(double*)reordered.data();
 }
@@ -121,8 +124,7 @@ long long ConstantPool::get_long(size_t idx) {
 	}
 
 	const auto bytes = entry->m_info;
-
-	const std::vector<u1> reordered = { bytes[4], bytes[5], bytes[6], bytes[7], bytes[0], bytes[1], bytes[2], bytes[3] };
+	const std::vector<u1> reordered = { bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0] };
 
 	return *(long long*)reordered.data();
 }
@@ -133,7 +135,7 @@ size_t ConstantPool::get_or_add_utf8(std::string str) {
 	}
 
 	// 1 to i + 1 because constant pool starts at 1
-	for (auto i = 1; i < this->m_constant_pool.size() + 1; i++) {
+	for (auto i = 1; i < this->m_entries.size() + 1; i++) {
 		const auto entry = this->get_entry(i);
 
 		if ((ConstantPoolType)entry->m_tag == ConstantPoolType::CONSTANT_Utf8) {
@@ -151,10 +153,18 @@ size_t ConstantPool::get_or_add_utf8(std::string str) {
 		info.push_back(str[i]);
 	}
 
-	this->m_constant_pool.push_back(ConstantPoolEntryInfo{ (int)ConstantPoolType::CONSTANT_Utf8, info });
+	this->m_entries.push_back(ConstantPoolEntryInfo{ (int)ConstantPoolType::CONSTANT_Utf8, info });
 
-	const auto new_idx = this->m_constant_pool.size();
+	const auto new_idx = this->m_entries.size();
 	this->m_cached_strings[str] = new_idx;
 
 	return new_idx;
+}
+
+std::vector<ConstantPoolEntryInfo> ConstantPool::get_entries() {
+	return this->m_entries;
+}
+
+size_t ConstantPool::get_size() {
+	return this->m_entries.size();
 }

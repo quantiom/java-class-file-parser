@@ -13,4 +13,15 @@ int main() {
    
     auto java_class = JavaClass(data);
     java_class.parse();
+
+    for (const auto& field : java_class.get_fields()) {
+        if (field->is_deprecated()) {
+            std::cout << "Setting " << field->get_name() << field->get_descriptor() << " to not be deprecated" << "\n";
+            field->set_deprecated(false);
+        }
+    }
+
+    const auto new_bytes = java_class.get_bytes();
+
+    std::ofstream("C:\\Users\\user\\Desktop\\NewTest.class", std::ios::binary).write((char*)new_bytes.data(), new_bytes.size());
 }
