@@ -51,6 +51,8 @@ public:
 	double get_double(size_t idx);
 	long long get_long(size_t idx);
 
+	// gets the index of a UTF8 string from the constant pool
+	// or adds it if it does not exist
 	size_t get_or_add_utf8(std::string str);
 private:
 	std::unordered_map<std::string, size_t> m_cached_strings;

@@ -132,10 +132,11 @@ size_t ConstantPool::get_or_add_utf8(std::string str) {
 		return this->m_cached_strings.at(str);
 	}
 
-	for (size_t i = 0; i < this->m_constant_pool.size(); i++) {
-		const auto entry = this->m_constant_pool.at(i);
+	// 1 to i + 1 because constant pool starts at 1
+	for (auto i = 1; i < this->m_constant_pool.size() + 1; i++) {
+		const auto entry = this->get_entry(i);
 
-		if ((ConstantPoolType)entry.m_tag == ConstantPoolType::CONSTANT_Utf8) {
+		if ((ConstantPoolType)entry->m_tag == ConstantPoolType::CONSTANT_Utf8) {
 			if (this->get_string(i) == str) {
 				this->m_cached_strings[str] = i;
 				return i;
@@ -143,7 +144,17 @@ size_t ConstantPool::get_or_add_utf8(std::string str) {
 		}
 	}
 
-	std::vector<u1> info;
+	const auto size = str.size();
+	std::vector<u1> info = { (u1)((size >> 8) & 255), (u1)(size & 255) };
+
+	for (auto i = 0; i < size; i++) {
+		info.push_back(str[i]);
+	}
 
 	this->m_constant_pool.push_back(ConstantPoolEntryInfo{ (int)ConstantPoolType::CONSTANT_Utf8, info });
+
+	const auto new_idx = this->m_constant_pool.size();
+	this->m_cached_strings[str] = new_idx;
+
+	return new_idx;
 }
