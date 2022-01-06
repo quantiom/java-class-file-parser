@@ -1,6 +1,6 @@
 #include <optional>
 #include "../../header/types/JavaClass.h"
-#include "../../header/attributes/RuntimeVisibleAnnotationsAttribute.h"
+#include "../../header/attributes/RuntimeAnnotationsAttribute.h"
 
 void JavaClass::parse() {
 	if (this->read_u4() != 0xCAFEBABE) {
@@ -124,7 +124,7 @@ void JavaClass::parse_interfaces() {
 void JavaClass::parse_fields() {
 	const auto fields_count = this->read_u2();
 
-	for (int i = 0; i < fields_count; i++) {
+	for (auto i = 0; i < fields_count; i++) {
 		const auto access_flags = this->read_u2();
 		const auto name_index = this->read_u2();
 		const auto descriptor_index = this->read_u2();
@@ -133,17 +133,8 @@ void JavaClass::parse_fields() {
 
 		std::vector<JavaAttribute*> attributes;
 
-		for (int j = 0; j < attribute_count; j++) {
-			const auto attribute = this->parse_attribute();
-			const auto attribute_name = this->m_constant_pool.get_string(attribute->m_name_index);
-
-			std::cout << "attribute name: " << attribute_name << "\n";
-
-			if (attribute_name == "RuntimeInvisibleAnnotations") {
-				RuntimeVisibleAnnotationsAttribute(this, attribute).parse();
-			}
-
-			attributes.push_back(attribute);
+		for (auto j = 0; j < attribute_count; j++) {
+			attributes.push_back(this->parse_attribute());
 		}
 
 		this->m_fields.push_back(new JavaField(this, access_flags, name_index, descriptor_index, attributes));
@@ -180,5 +171,5 @@ JavaAttribute* JavaClass::parse_attribute() {
 		attribute_info.push_back(this->read_u1());
 	}
 
-	return new JavaAttribute(this, attribute_name_index, attribute_length, attribute_info);
+	return new JavaAttribute(this, attribute_name_index, attribute_info);
 }

@@ -1,6 +1,8 @@
 #pragma once
 #include "JavaAttribute.h"
 
+// https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.2
+
 struct ConstantValueAttribute : public BaseAttributeParser {
 	ConstantValueAttribute(JavaClass* java_class, JavaAttribute* attribute)
 		: BaseAttributeParser(java_class, attribute) {};

@@ -1,9 +1,8 @@
-#include "../../header/attributes/RuntimeVisibleAnnotationsAttribute.h"
+#include "../../header/attributes/RuntimeAnnotationsAttribute.h"
 #include "../../header/types/JavaClass.h"
 #include "../../header/types/JavaAnnotation.h"
 
-// works with RuntimeInvisibleAnnotationsAttribute as well.
-RuntimeVisibleAnnotationsAttribute* RuntimeVisibleAnnotationsAttribute::parse() {
+RuntimeAnnotationsAttribute* RuntimeAnnotationsAttribute::parse() {
 	const auto num_annotations = this->read_u2();
 
 	for (auto i = 0; i < num_annotations; i++) {

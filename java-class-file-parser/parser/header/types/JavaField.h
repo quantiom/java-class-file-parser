@@ -2,6 +2,7 @@
 #include "JavaType.h"
 #include "../defines.h"
 #include "../attributes/JavaAttribute.h"
+#include "../types/JavaAnnotation.h"
 
 // https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.5
 
@@ -26,28 +27,21 @@ struct JavaField : public JavaType {
 
 	// utility methods & fields
 
-	bool is_deprecated() {
-		return this->m_deprecated;
-	}
+	std::string get_name();
+	std::string get_descriptor();
 
-	void set_deprecated(bool new_value) {
-		if (this->m_deprecated == new_value) return;
+	bool is_final();
 
-		if (new_value) {
+	bool is_deprecated();
+	void set_deprecated(bool new_value);
 
-		} else {
+	// constant value index in the constant pool
+	// only works if the field is final
+	size_t get_constant_value_index();
 
-		}
-	}
+	std::vector<JavaAnnotation*> get_annotations();
 
-	bool is_synthetic() {
-		return this->m_synthetic;
-	}
-
-	void set_synthetic() {
-
-	}
 private:
-	bool m_deprecated;
-	bool m_synthetic;
+	bool m_deprecated = false;
+	bool m_synthetic = false;
 };

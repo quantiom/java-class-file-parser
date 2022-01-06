@@ -60,4 +60,8 @@ struct JavaAnnotation : public JavaType {
 
 	// descriptor index - element value
 	std::vector<std::pair<u2, AnnotationElementValue*>> m_element_value_pairs;
+
+	// utility methods & fields
+
+	std::string get_name();
 };
