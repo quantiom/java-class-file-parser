@@ -85,6 +85,8 @@ void JavaClass::parse_constant_pool() {
 				std::cout << i << ": Long/Double" << "\n";
 
 				byte_info = { high_bytes[0], high_bytes[1], high_bytes[2], high_bytes[3], low_bytes[0], low_bytes[1], low_bytes[2], low_bytes[3] };
+
+				i += 1;
 			} break;
 			case ConstantPoolType::CONSTANT_Utf8: {
 				const auto length = this->read_u2();

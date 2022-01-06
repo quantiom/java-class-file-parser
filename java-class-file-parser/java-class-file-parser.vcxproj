@@ -48,7 +48,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -145,7 +145,8 @@
     <ClCompile Include="parser\source\attributes\AnnotationAttributeParser.cpp" />
     <ClCompile Include="parser\source\attributes\ConstantValueAttribute.cpp" />
     <ClCompile Include="parser\source\attributes\RuntimeVisibleAnnotationsAttribute.cpp" />
-    <ClCompile Include="parser\source\types\ConstantPool.cpp" />
+    <ClCompile Include="parser\source\types\JavaAttribute.cpp" />
+    <ClCompile Include="parser\source\utils\ConstantPool.cpp" />
     <ClCompile Include="parser\source\types\JavaClass.cpp" />
   </ItemGroup>
   <ItemGroup>

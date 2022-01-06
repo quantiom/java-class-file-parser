@@ -24,7 +24,7 @@ struct JavaField : public JavaType {
 	u2 m_descriptor_index;
 	std::vector<JavaAttribute*> m_attributes;
 
-	//
+	// utility methods & fields
 
 	bool is_deprecated() {
 		return this->m_deprecated;

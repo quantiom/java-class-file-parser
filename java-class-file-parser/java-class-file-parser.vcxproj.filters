@@ -24,13 +24,16 @@
     <ClCompile Include="parser\source\types\JavaClass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="parser\source\types\ConstantPool.cpp">
+    <ClCompile Include="parser\source\utils\ConstantPool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="parser\source\attributes\RuntimeVisibleAnnotationsAttribute.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="parser\source\attributes\AnnotationAttributeParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="parser\source\types\JavaAttribute.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
