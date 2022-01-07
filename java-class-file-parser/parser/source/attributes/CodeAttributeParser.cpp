@@ -16,7 +16,7 @@ CodeAttributeParser* CodeAttributeParser::parse() {
 		std::cout << std::hex << "0x" << (int)code << " ";
 	}
 
-	std::cout << std::endl;
+	std::cout << std::endl << "Max stack: " << this->m_max_stack << " | " << "Max locals: " << this->m_max_locals << "\n";
 
 	const auto exception_table_length = this->read_u2();
 
