@@ -51,6 +51,8 @@ private:
 	void parse_methods();
 	void parse_attributes();
 
+	// todo: add_field(...)
+
 	// version the class was compiled for
 	u2 m_minor_version;
 	u2 m_major_version;

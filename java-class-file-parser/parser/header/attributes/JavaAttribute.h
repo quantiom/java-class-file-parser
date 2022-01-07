@@ -19,6 +19,7 @@ struct JavaAttribute : public ByteReader {
 	std::string get_name();
 };
 
+// TODO: remove this
 struct BaseAttributeParser : public JavaAttribute {
 	BaseAttributeParser(JavaClass* java_class, JavaAttribute* attribute)
 		: JavaAttribute(java_class, attribute->m_name_index, attribute->m_info) {};
