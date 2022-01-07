@@ -1,6 +1,6 @@
-#include "../../header/attributes/CodeAttributeParser.h"
+#include "../../header/attributes/CodeAttribute.h"
 
-CodeAttributeParser* CodeAttributeParser::parse() {
+CodeAttribute* CodeAttribute::parse() {
 	this->m_max_stack = this->read_u2();
 	this->m_max_locals = this->read_u2();
 

@@ -1,7 +1,7 @@
-#include "../../header/attributes/AnnotationAttributeParser.h"
+#include "../../header/attributes/AnnotationAttribute.h"
 #include "../../header/types/JavaClass.h"
 
-JavaAnnotation* AnnotationAttributeParser::parse_annotation() {
+JavaAnnotation* AnnotationAttribute::parse_annotation() {
 	const auto type_index = this->read_u2();
 	const auto num_element_value_pairs = this->read_u2();
 
@@ -17,7 +17,7 @@ JavaAnnotation* AnnotationAttributeParser::parse_annotation() {
 	return new JavaAnnotation(this->m_java_class, type_index, element_value_pairs);
 }
 
-AnnotationElementValue* AnnotationAttributeParser::parse_element_value() {
+AnnotationElementValue* AnnotationAttribute::parse_element_value() {
 	const auto element_value_tag = this->read_u1();
 
 	AnnotationElementValue* element_value = new AnnotationElementValue(element_value_tag);
@@ -38,7 +38,7 @@ AnnotationElementValue* AnnotationAttributeParser::parse_element_value() {
 	return element_value;
 }
 
-void AnnotationAttributeParser::get_annotation_bytes(std::unique_ptr<ByteWriter>& writer, JavaAnnotation* annotation) {
+void AnnotationAttribute::get_annotation_bytes(std::unique_ptr<ByteWriter>& writer, JavaAnnotation* annotation) {
 	writer->write_u2(annotation->m_type_index);
 	writer->write_u2(annotation->m_element_value_pairs.size());
 
@@ -48,7 +48,7 @@ void AnnotationAttributeParser::get_annotation_bytes(std::unique_ptr<ByteWriter>
 	}
 }
 
-void AnnotationAttributeParser::get_element_value_bytes(std::unique_ptr<ByteWriter>& writer, AnnotationElementValue* element_value) {
+void AnnotationAttribute::get_element_value_bytes(std::unique_ptr<ByteWriter>& writer, AnnotationElementValue* element_value) {
 	if (element_value->is_const_value()) { // Const Value
 		writer->write_u2(element_value->m_const_value_index);
 	} else if (element_value->is_enum_const()) { // Enum Constant

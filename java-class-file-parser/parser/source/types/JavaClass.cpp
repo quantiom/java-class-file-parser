@@ -1,7 +1,7 @@
 #include <optional>
 #include "../../header/types/JavaClass.h"
 #include "../../header/utils/ByteWriter.h"
-#include "../../header/attributes/CodeAttributeParser.h"
+#include "../../header/attributes/CodeAttribute.h"
 
 JavaClass* JavaClass::parse() {
 	if (this->read_u4() != 0xCAFEBABE) {
@@ -239,8 +239,8 @@ void JavaClass::parse_methods() {
 			attributes.push_back(attribute);
 
 			if (attribute->get_name() == "Code" && this->get_constant_pool().get_string(name_index) == "main") {
-				std::unique_ptr<CodeAttributeParser> parser(new CodeAttributeParser(this, attribute));
-				parser->parse();
+				std::unique_ptr<CodeAttribute> code_attribute(new CodeAttribute(this, attribute));
+				code_attribute->parse();
 
 
 			}

@@ -3,10 +3,10 @@
 #include "../types/JavaAnnotation.h"
 #include "../utils/ByteWriter.h"
 
-class AnnotationAttributeParser : public BaseAttributeParser {
+class AnnotationAttribute : public JavaAttribute {
 public:
-	AnnotationAttributeParser(JavaClass* java_class, JavaAttribute* attribute)
-		: BaseAttributeParser(java_class, attribute) {};
+	AnnotationAttribute(JavaClass* java_class, JavaAttribute* attribute)
+		: JavaAttribute(java_class, attribute) {};
 
 	// parse an annotation at the current byte index
 	JavaAnnotation* parse_annotation();

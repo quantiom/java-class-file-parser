@@ -3,9 +3,9 @@
 
 // https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.2
 
-struct ConstantValueAttribute : public BaseAttributeParser {
+struct ConstantValueAttribute : public JavaAttribute {
 	ConstantValueAttribute(JavaClass* java_class, JavaAttribute* attribute)
-		: BaseAttributeParser(java_class, attribute) {};
+		: JavaAttribute(java_class, attribute) {};
 
 	ConstantValueAttribute* parse();
 	std::vector<u1> get_bytes();

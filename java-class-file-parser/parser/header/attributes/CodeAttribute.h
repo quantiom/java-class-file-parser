@@ -10,12 +10,12 @@ struct ExceptionTableEntry {
     u2 m_catch_type;
 };
 
-struct CodeAttributeParser : public BaseAttributeParser {
-	CodeAttributeParser(JavaClass* java_class, JavaAttribute* attribute)
-		: BaseAttributeParser(java_class, attribute) {
+struct CodeAttribute : public JavaAttribute {
+	CodeAttribute(JavaClass* java_class, JavaAttribute* attribute) : JavaAttribute(java_class, attribute) {
+        this->parse();
 	};
 
-	CodeAttributeParser* parse();
+	CodeAttribute* parse();
 	std::vector<u1> get_bytes();
 
 	u2 m_max_stack;
