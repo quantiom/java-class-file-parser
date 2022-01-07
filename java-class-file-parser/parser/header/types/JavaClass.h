@@ -33,7 +33,7 @@ public:
 	};
 
 	// parses the class file
-	void parse();
+	JavaClass* parse();
 
 	// get the bytes of the class file (including modifications made)
 	std::vector<u1> get_bytes();
@@ -50,9 +50,6 @@ private:
 	void parse_fields();
 	void parse_methods();
 	void parse_attributes();
-
-	// parse an attribute at the current byte index
-	JavaAttribute* parse_attribute();
 
 	// version the class was compiled for
 	u2 m_minor_version;

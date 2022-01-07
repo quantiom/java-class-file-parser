@@ -1,9 +1,9 @@
 #include <optional>
 #include "../../header/types/JavaClass.h"
 #include "../../header/utils/ByteWriter.h"
-#include "../../header/attributes/RuntimeAnnotationsAttribute.h"
+#include "../../header/attributes/CodeAttributeParser.h"
 
-void JavaClass::parse() {
+JavaClass* JavaClass::parse() {
 	if (this->read_u4() != 0xCAFEBABE) {
 		throw std::invalid_argument("Invalid java class file. Does not have 0xCAFEBABE magic.");
 	}
@@ -23,6 +23,8 @@ void JavaClass::parse() {
 	this->parse_fields();
 	this->parse_methods();
 	this->parse_attributes();
+
+	return this;
 }
 
 std::vector<u1> JavaClass::get_bytes() {
@@ -213,7 +215,7 @@ void JavaClass::parse_fields() {
 		std::vector<JavaAttribute*> attributes;
 
 		for (auto j = 0; j < attribute_count; j++) {
-			attributes.push_back(this->parse_attribute());
+			attributes.push_back(this->read_attribute());
 		}
 
 		this->m_fields.push_back(new JavaField(this, access_flags, name_index, descriptor_index, attributes));
@@ -233,7 +235,15 @@ void JavaClass::parse_methods() {
 		std::vector<JavaAttribute*> attributes;
 
 		for (auto j = 0; j < attribute_count; j++) {
-			attributes.push_back(this->parse_attribute());
+			const auto attribute = this->read_attribute();
+			attributes.push_back(attribute);
+
+			if (attribute->get_name() == "Code" && this->get_constant_pool().get_string(name_index) == "main") {
+				std::unique_ptr<CodeAttributeParser> parser(new CodeAttributeParser(this, attribute));
+				parser->parse();
+
+
+			}
 		}
 
 		this->m_methods.push_back(new JavaMethod(this, access_flags, name_index, descriptor_index, attributes));
@@ -244,19 +254,6 @@ void JavaClass::parse_attributes() {
 	const auto attributes_count = this->read_u2();
 
 	for (auto i = 0; i < attributes_count; i++) {
-		this->m_class_attributes.push_back(this->parse_attribute());
+		this->m_class_attributes.push_back(this->read_attribute());
 	}
-}
-
-JavaAttribute* JavaClass::parse_attribute() {
-	const auto attribute_name_index = this->read_u2();
-	const auto attribute_length = this->read_u4();
-
-	std::vector<u1> attribute_info;
-
-	for (auto k = 0; k < attribute_length; k++) {
-		attribute_info.push_back(this->read_u1());
-	}
-
-	return new JavaAttribute(this, attribute_name_index, attribute_info);
 }

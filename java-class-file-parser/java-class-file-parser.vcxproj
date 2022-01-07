@@ -142,17 +142,20 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="parser\source\attributes\CodeAttributeParser.cpp" />
     <ClCompile Include="parser\source\attributes\AnnotationAttributeParser.cpp" />
     <ClCompile Include="parser\source\attributes\ConstantValueAttribute.cpp" />
     <ClCompile Include="parser\source\attributes\RuntimeAnnotationsAttribute.cpp" />
     <ClCompile Include="parser\source\types\JavaAnnotation.cpp" />
     <ClCompile Include="parser\source\types\JavaAttribute.cpp" />
     <ClCompile Include="parser\source\types\JavaField.cpp" />
+    <ClCompile Include="parser\source\utils\ByteReader.cpp" />
     <ClCompile Include="parser\source\utils\ConstantPool.cpp" />
     <ClCompile Include="parser\source\types\JavaClass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="parser\header\attributes\AnnotationAttributeParser.h" />
+    <ClInclude Include="parser\header\attributes\CodeAttributeParser.h" />
     <ClInclude Include="parser\header\attributes\ConstantValueAttribute.h" />
     <ClInclude Include="parser\header\attributes\JavaAttribute.h" />
     <ClInclude Include="parser\header\attributes\RuntimeAnnotationsAttribute.h" />

@@ -42,6 +42,12 @@
     <ClCompile Include="parser\source\types\JavaAnnotation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="parser\source\attributes\CodeAttributeParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="parser\source\utils\ByteReader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="parser\header\defines.h">
@@ -81,6 +87,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="parser\header\utils\ByteWriter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\header\attributes\CodeAttributeParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

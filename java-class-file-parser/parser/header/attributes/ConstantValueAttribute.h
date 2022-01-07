@@ -8,6 +8,7 @@ struct ConstantValueAttribute : public BaseAttributeParser {
 		: BaseAttributeParser(java_class, attribute) {};
 
 	ConstantValueAttribute* parse();
+	std::vector<u1> get_bytes();
 
 	// index of the constant value in the constant pool
 	u2 m_constantvalue_index;

@@ -134,7 +134,6 @@ size_t ConstantPool::get_or_add_utf8(std::string str) {
 		return this->m_cached_strings.at(str);
 	}
 
-	// 1 to i + 1 because constant pool starts at 1
 	for (auto i = 1; i < this->m_entries.size() + 1; i++) {
 		const auto entry = this->get_entry(i);
 
@@ -157,6 +156,32 @@ size_t ConstantPool::get_or_add_utf8(std::string str) {
 
 	const auto new_idx = this->m_entries.size();
 	this->m_cached_strings[str] = new_idx;
+
+	return new_idx;
+}
+
+size_t ConstantPool::get_or_add_integer(u4 integer) {
+	if (this->m_cached_integers.contains(integer)) {
+		return this->m_cached_integers.at(integer);
+	}
+
+	for (auto i = 1; i < this->m_entries.size() + 1; i++) {
+		const auto entry = this->get_entry(i);
+
+		if ((ConstantPoolType)entry->m_tag == ConstantPoolType::CONSTANT_Integer) {
+			if (this->get_integer(i) == integer) {
+				this->m_cached_integers[integer] = i;
+				return i;
+			}
+		}
+	}
+
+	std::vector<u1> info = { (u1)((integer >> 24) & 255), (u1)((integer >> 16) & 255), (u1)((integer >> 8) & 255), (u1)(integer & 255) };
+
+	this->m_entries.push_back(ConstantPoolEntryInfo{ (int)ConstantPoolType::CONSTANT_Integer, info });
+
+	const auto new_idx = this->m_entries.size();
+	this->m_cached_integers[integer] = new_idx;
 
 	return new_idx;
 }
