@@ -2,10 +2,8 @@
 #include "../../header/types/JavaClass.h"
 #include "../../header/utils/ByteWriter.h"
 
-ConstantValueAttribute* ConstantValueAttribute::parse() {
+void ConstantValueAttribute::parse() {
 	this->m_constantvalue_index = this->read_u2();
-
-	return this;
 }
 
 std::vector<u1> ConstantValueAttribute::get_bytes() {

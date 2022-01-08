@@ -1,10 +1,11 @@
 #pragma once
 #include "../defines.h"
 #include "../types/JavaType.h"
+
+#include <variant>
 #include <vector>
 
 class JavaClass;
-struct JavaAttribute;
 
 class ByteReader : public JavaType {
 public:
@@ -42,8 +43,6 @@ public:
 	u1 read_u1(size_t idx) {
 		return this->m_bytes[idx];
 	}
-
-	JavaAttribute* read_attribute();
 
 protected:
 	// bytes

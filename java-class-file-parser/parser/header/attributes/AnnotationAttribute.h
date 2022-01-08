@@ -5,8 +5,13 @@
 
 class AnnotationAttribute : public JavaAttribute {
 public:
-	AnnotationAttribute(JavaClass* java_class, JavaAttribute* attribute)
+	AnnotationAttribute() : JavaAttribute() {};
+
+	AnnotationAttribute(JavaClass* java_class, std::shared_ptr<JavaAttribute>& attribute)
 		: JavaAttribute(java_class, attribute) {};
+
+	AnnotationAttribute(JavaClass* java_class, u2 name_index, std::vector<u1> info)
+		: JavaAttribute(java_class, name_index, info) {};
 
 	// parse an annotation at the current byte index
 	JavaAnnotation* parse_annotation();

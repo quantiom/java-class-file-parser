@@ -26,34 +26,35 @@ void JavaField::set_deprecated(bool new_value) {
 		return;
 
 	if (new_value) {
-		this->m_attributes.push_back(new JavaAttribute(this->m_java_class, this->m_java_class->get_constant_pool().get_or_add_utf8("Deprecated"), {}));
+		this->m_attributes.push_back(std::make_shared<ParsedAttribute>(JavaAttribute(this->m_java_class, this->m_java_class->get_constant_pool().get_or_add_utf8("Deprecated"), {})));
 	} else {
 		for (auto it = this->m_attributes.begin(); it != this->m_attributes.end(); it++) {
-			const auto attribute = *it;
-			const auto attribute_name = attribute->get_name();
+			auto attribute_ptr = *it;
 
-			if (attribute_name == "Deprecated") {
-				delete attribute;
-				this->m_attributes.erase(it--);
-			} else if (attribute_name == "RuntimeVisibleAnnotations") {
-				std::unique_ptr<RuntimeAnnotationsAttribute> runtime_annotation_attribute(new RuntimeAnnotationsAttribute(this->m_java_class, attribute));
-				runtime_annotation_attribute->parse();
+			// TODO: fix
+			/*std::visit([this, it](auto& attribute) {
+				const auto attribute_name = attribute.get_name();
 
-				for (auto annotation_it = runtime_annotation_attribute->m_annotations.begin(); annotation_it != runtime_annotation_attribute->m_annotations.end(); annotation_it++) {
-					const auto annotation = *annotation_it;
+				if (attribute_name == "Deprecated") {
+					this->m_attributes.erase(it--);
+				} else if (attribute_name == "RuntimeVisibleAnnotations") {
+					auto runtime_annotations_attribute = std::dynamic_pointer_cast<RuntimeAnnotationsAttribute>(attribute);
 
-					if (annotation->get_name() == "Ljava/lang/Deprecated;") {
-						runtime_annotation_attribute->m_annotations.erase(annotation_it--);
+					for (auto annotation_it = runtime_annotations_attribute->m_annotations.begin(); annotation_it != runtime_annotations_attribute->m_annotations.end(); annotation_it++) {
+						const auto annotation = *annotation_it;
+
+						if (annotation->get_name() == "Ljava/lang/Deprecated;") {
+							runtime_annotations_attribute->m_annotations.erase(annotation_it--);
+						}
+					}
+
+					if (runtime_annotations_attribute->m_annotations.empty()) {
+						this->m_attributes.erase(it--);
+					} else {
+						attribute->m_info = runtime_annotations_attribute->get_bytes();
 					}
 				}
-
-				if (runtime_annotation_attribute->m_annotations.empty()) {
-					delete attribute;
-					this->m_attributes.erase(it--);
-				} else {
-					attribute->m_info = runtime_annotation_attribute->get_bytes();
-				}
-			}
+			}, *attribute_ptr);*/
 		}
 	}
 
@@ -66,10 +67,8 @@ size_t JavaField::get_constant_value_index() {
 	}
 
 	for (const auto& attribute : this->m_attributes) {
-		const auto attribute_name = attribute->get_name();
-
-		if (attribute_name == "ConstantValue") {
-			return ConstantValueAttribute(this->m_java_class, attribute).parse()->m_constantvalue_index;
+		if (auto constant_value_attribute = std::get_if<ConstantValueAttribute>(&(*attribute)); constant_value_attribute != nullptr) {
+			return constant_value_attribute->m_constantvalue_index;
 		}
 	}
 
@@ -79,14 +78,9 @@ size_t JavaField::get_constant_value_index() {
 const std::vector<JavaAnnotation*> JavaField::get_annotations() {
 	std::vector<JavaAnnotation*> annotations;
 	
-	for (const auto& attribute : this->m_attributes) {
-		const auto attribute_name = attribute->get_name();
-
-		if (attribute_name == "RuntimeVisibleAnnotations" || attribute_name == "RuntimeInvisibleAnnotations") {
-			std::unique_ptr<RuntimeAnnotationsAttribute> attribute_annotations(new RuntimeAnnotationsAttribute(this->m_java_class, attribute));
-			attribute_annotations->parse();
-
-			annotations.insert(annotations.end(), attribute_annotations->m_annotations.begin(), attribute_annotations->m_annotations.end());
+	for (auto& attribute : this->m_attributes) {
+		if (auto runtime_annotations_attribute = std::get_if<RuntimeAnnotationsAttribute>(&(*attribute)); runtime_annotations_attribute != nullptr) {
+			annotations.insert(annotations.end(), runtime_annotations_attribute->m_annotations.begin(), runtime_annotations_attribute->m_annotations.end());
 		}
 	}
 

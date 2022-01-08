@@ -30,7 +30,7 @@
     <ClCompile Include="parser\source\attributes\RuntimeAnnotationsAttribute.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="parser\source\attributes\AnnotationAttributeParser.cpp">
+    <ClCompile Include="parser\source\attributes\AnnotationAttribute.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="parser\source\types\JavaAttribute.cpp">
@@ -42,10 +42,10 @@
     <ClCompile Include="parser\source\types\JavaAnnotation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="parser\source\attributes\CodeAttributeParser.cpp">
+    <ClCompile Include="parser\source\attributes\CodeAttribute.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="parser\source\utils\ByteReader.cpp">
+    <ClCompile Include="parser\source\utils\AttributeReader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -80,7 +80,7 @@
     <ClInclude Include="parser\header\types\JavaAnnotation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="parser\header\attributes\AnnotationAttributeParser.h">
+    <ClInclude Include="parser\header\attributes\AnnotationAttribute.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="parser\header\types\JavaType.h">
@@ -89,7 +89,25 @@
     <ClInclude Include="parser\header\utils\ByteWriter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="parser\header\attributes\CodeAttributeParser.h">
+    <ClInclude Include="parser\header\attributes\CodeAttribute.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\header\bytecode\Bytecode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\header\attributes\ParsedAttribute.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\header\attributes\DeprecatedAttribute.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\header\utils\FnvHash.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\header\utils\AttributeReader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\header\utils\AttributeWriter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

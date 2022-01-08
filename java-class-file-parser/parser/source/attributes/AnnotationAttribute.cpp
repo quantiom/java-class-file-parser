@@ -40,7 +40,7 @@ AnnotationElementValue* AnnotationAttribute::parse_element_value() {
 
 void AnnotationAttribute::get_annotation_bytes(std::unique_ptr<ByteWriter>& writer, JavaAnnotation* annotation) {
 	writer->write_u2(annotation->m_type_index);
-	writer->write_u2(annotation->m_element_value_pairs.size());
+	writer->write_u2((u2)annotation->m_element_value_pairs.size());
 
 	for (const auto& [name_index, element_value] : annotation->m_element_value_pairs) {
 		writer->write_u2(name_index);

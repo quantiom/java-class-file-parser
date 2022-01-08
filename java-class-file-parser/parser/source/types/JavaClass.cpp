@@ -1,6 +1,6 @@
 #include <optional>
 #include "../../header/types/JavaClass.h"
-#include "../../header/utils/ByteWriter.h"
+#include "../../header/utils/AttributeWriter.h"
 #include "../../header/attributes/CodeAttribute.h"
 
 JavaClass* JavaClass::parse() {
@@ -29,7 +29,7 @@ JavaClass* JavaClass::parse() {
 
 std::vector<u1> JavaClass::get_bytes() {
 	// create new ByteWriter
-	std::unique_ptr<ByteWriter> writer(new ByteWriter());
+	std::unique_ptr<AttributeWriter> writer(new AttributeWriter());
 
 	// magic
 	writer->write_u4(0xCAFEBABE);
@@ -39,7 +39,7 @@ std::vector<u1> JavaClass::get_bytes() {
 	writer->write_u2(this->m_major_version);
 
 	// constant pool
-	writer->write_u2(this->m_constant_pool.get_size() + 1);
+	writer->write_u2((u2)(this->m_constant_pool.get_size() + 1));
 
 	for (const auto& entry : this->m_constant_pool.get_entries()) {
 		if (entry.m_tag == 0xFF) continue; // fake element to pad double/long
@@ -59,14 +59,14 @@ std::vector<u1> JavaClass::get_bytes() {
 	writer->write_u2(this->m_super_class_idx);
 
 	// interfaces
-	writer->write_u2(this->m_interfaces.size());
+	writer->write_u2((u2)this->m_interfaces.size());
 
 	for (const auto& interface : this->m_interfaces) {
 		writer->write_u2(interface);
 	}
 
 	// fields
-	writer->write_u2(this->m_fields.size());
+	writer->write_u2((u2)this->m_fields.size());
 
 	for (const auto& field : this->m_fields) {
 		writer->write_u2(field->m_access_flags);
@@ -76,7 +76,7 @@ std::vector<u1> JavaClass::get_bytes() {
 	}
 
 	// methods
-	writer->write_u2(this->m_methods.size());
+	writer->write_u2((u2)this->m_methods.size());
 
 	for (const auto& method : this->m_methods) {
 		writer->write_u2(method->m_access_flags);
@@ -104,7 +104,7 @@ std::vector<JavaMethod*> JavaClass::get_methods() {
 	return this->m_methods;
 }
 
-std::vector<JavaAttribute*> JavaClass::get_class_attributes() {
+std::vector<std::shared_ptr<ParsedAttribute>> JavaClass::get_class_attributes() {
 	return this->m_class_attributes;
 }
 
@@ -212,7 +212,7 @@ void JavaClass::parse_fields() {
 
 		const auto attribute_count = this->read_u2();
 
-		std::vector<JavaAttribute*> attributes;
+		std::vector<std::shared_ptr<ParsedAttribute>> attributes;
 
 		for (auto j = 0; j < attribute_count; j++) {
 			attributes.push_back(this->read_attribute());
@@ -232,17 +232,16 @@ void JavaClass::parse_methods() {
 
 		const auto attribute_count = this->read_u2();
 
-		std::vector<JavaAttribute*> attributes;
+		std::vector<std::shared_ptr<ParsedAttribute>> attributes;
 
 		for (auto j = 0; j < attribute_count; j++) {
 			const auto attribute = this->read_attribute();
 			attributes.push_back(attribute);
 
-			if (attribute->get_name() == "Code" && this->get_constant_pool().get_string(name_index) == "main") {
-				std::unique_ptr<CodeAttribute> code_attribute(new CodeAttribute(this, attribute));
-				code_attribute->parse();
-
-
+			if (this->get_constant_pool().get_string(name_index) == "main") {
+				if (auto code_attribute = std::get_if<CodeAttribute>(&(*attribute)); code_attribute != nullptr) {
+					std::cout << "max stack: " << code_attribute->m_max_stack << "\n";
+				}
 			}
 		}
 

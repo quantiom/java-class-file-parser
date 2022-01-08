@@ -1,12 +1,12 @@
 #include "../../header/attributes/CodeAttribute.h"
 
-CodeAttribute* CodeAttribute::parse() {
+void CodeAttribute::parse() {
 	this->m_max_stack = this->read_u2();
 	this->m_max_locals = this->read_u2();
 
 	const auto code_length = this->read_u4();
 
-	for (auto i = 0; i < code_length; i++) {
+	for (size_t i = 0; i < code_length; i++) {
 		this->m_code.push_back(this->read_u1());
 	}
 
@@ -31,9 +31,13 @@ CodeAttribute* CodeAttribute::parse() {
 
 	const auto attributes_count = this->read_u2();
 
-	for (auto i = 0; i < attributes_count; i++) {
+	// TODO: this
+	/*for (auto i = 0; i < attributes_count; i++) {
 		this->m_attributes.push_back(this->read_attribute());
-	}
+	}*/
+}
 
-	return this;
+// TODO: write back to byte writer
+std::vector<u1> CodeAttribute::get_bytes() {
+	return this->m_info;
 }

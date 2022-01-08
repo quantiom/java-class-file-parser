@@ -142,32 +142,38 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="parser\source\attributes\CodeAttributeParser.cpp" />
-    <ClCompile Include="parser\source\attributes\AnnotationAttributeParser.cpp" />
+    <ClCompile Include="parser\source\attributes\CodeAttribute.cpp" />
+    <ClCompile Include="parser\source\attributes\AnnotationAttribute.cpp" />
     <ClCompile Include="parser\source\attributes\ConstantValueAttribute.cpp" />
     <ClCompile Include="parser\source\attributes\RuntimeAnnotationsAttribute.cpp" />
+    <ClCompile Include="parser\source\utils\AttributeReader.cpp" />
     <ClCompile Include="parser\source\types\JavaAnnotation.cpp" />
     <ClCompile Include="parser\source\types\JavaAttribute.cpp" />
     <ClCompile Include="parser\source\types\JavaField.cpp" />
-    <ClCompile Include="parser\source\utils\ByteReader.cpp" />
     <ClCompile Include="parser\source\utils\ConstantPool.cpp" />
     <ClCompile Include="parser\source\types\JavaClass.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="parser\header\attributes\AnnotationAttributeParser.h" />
-    <ClInclude Include="parser\header\attributes\CodeAttributeParser.h" />
+    <ClInclude Include="parser\header\attributes\AnnotationAttribute.h" />
+    <ClInclude Include="parser\header\attributes\CodeAttribute.h" />
     <ClInclude Include="parser\header\attributes\ConstantValueAttribute.h" />
+    <ClInclude Include="parser\header\attributes\DeprecatedAttribute.h" />
     <ClInclude Include="parser\header\attributes\JavaAttribute.h" />
+    <ClInclude Include="parser\header\attributes\ParsedAttribute.h" />
     <ClInclude Include="parser\header\attributes\RuntimeAnnotationsAttribute.h" />
+    <ClInclude Include="parser\header\bytecode\Bytecode.h" />
     <ClInclude Include="parser\header\defines.h" />
     <ClInclude Include="parser\header\types\JavaAnnotation.h" />
     <ClInclude Include="parser\header\types\JavaClass.h" />
     <ClInclude Include="parser\header\types\JavaField.h" />
     <ClInclude Include="parser\header\types\JavaMethod.h" />
     <ClInclude Include="parser\header\types\JavaType.h" />
+    <ClInclude Include="parser\header\utils\AttributeReader.h" />
+    <ClInclude Include="parser\header\utils\AttributeWriter.h" />
     <ClInclude Include="parser\header\utils\ByteReader.h" />
     <ClInclude Include="parser\header\utils\ByteWriter.h" />
     <ClInclude Include="parser\header\utils\ConstantPool.h" />
+    <ClInclude Include="parser\header\utils\FnvHash.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

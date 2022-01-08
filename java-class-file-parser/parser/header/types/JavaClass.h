@@ -4,7 +4,7 @@
 #include <optional>
 
 #include "../defines.h"
-#include "../utils/ByteReader.h"
+#include "../utils/AttributeReader.h"
 #include "../utils/ConstantPool.h"
 
 #include "JavaField.h"
@@ -26,9 +26,9 @@ enum class AccessFlags {
 	ACC_ENUM = 0x4000,
 };
 
-class JavaClass : public ByteReader {
+class JavaClass : public AttributeReader {
 public:
-	JavaClass(std::vector<u1> bytes) : ByteReader(this, bytes) {
+	JavaClass(std::vector<u1> bytes) : AttributeReader(this, bytes) {
 		this->m_constant_pool = ConstantPool();
 	};
 
@@ -42,7 +42,7 @@ public:
 	ConstantPool get_constant_pool();
 	std::vector<JavaField*> get_fields();
 	std::vector<JavaMethod*> get_methods();
-	std::vector<JavaAttribute*> get_class_attributes();
+	std::vector<std::shared_ptr<ParsedAttribute>> get_class_attributes();
 
 private:
 	void parse_constant_pool();
@@ -77,5 +77,5 @@ private:
 	std::vector<JavaMethod*> m_methods;
 
 	// class attributes
-	std::vector<JavaAttribute*> m_class_attributes;
+	std::vector<std::shared_ptr<ParsedAttribute>> m_class_attributes;
 };
