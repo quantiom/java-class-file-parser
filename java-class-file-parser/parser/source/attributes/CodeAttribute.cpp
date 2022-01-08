@@ -31,10 +31,21 @@ void CodeAttribute::parse() {
 
 	const auto attributes_count = this->read_u2();
 
-	// TODO: this
-	/*for (auto i = 0; i < attributes_count; i++) {
-		this->m_attributes.push_back(this->read_attribute());
-	}*/
+	// no parsing (for now)
+	for (auto i = 0; i < attributes_count; i++) {
+		const auto attribute_name_index = this->read_u2();
+		const auto attribute_length = this->read_u4();
+
+		std::vector<u1> attribute_info;
+
+		for (auto k = 0; k < attribute_length; k++) {
+			attribute_info.push_back(this->read_u1());
+		}
+
+		const auto attribute = std::make_shared<BasicAttribute>(JavaAttribute(this->m_java_class, attribute_name_index, attribute_info));
+
+		this->m_attributes.push_back(attribute);
+	}
 }
 
 // TODO: write back to byte writer
