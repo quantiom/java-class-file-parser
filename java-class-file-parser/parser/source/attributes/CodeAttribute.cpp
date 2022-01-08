@@ -10,14 +10,6 @@ void CodeAttribute::parse() {
 		this->m_code.push_back(this->read_u1());
 	}
 
-	std::cout << "Code: ";
-
-	for (const auto& code : this->m_code) {
-		std::cout << std::hex << "0x" << (int)code << " ";
-	}
-
-	std::cout << std::endl << "Max stack: " << this->m_max_stack << " | " << "Max locals: " << this->m_max_locals << "\n";
-
 	const auto exception_table_length = this->read_u2();
 
 	for (auto i = 0; i < exception_table_length; i++) {
@@ -48,7 +40,6 @@ void CodeAttribute::parse() {
 	}
 }
 
-// TODO: write back to byte writer
 std::vector<u1> CodeAttribute::get_bytes() {
-	return this->m_info;
+	return this->get_info();
 }

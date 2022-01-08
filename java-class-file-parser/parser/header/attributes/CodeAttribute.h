@@ -27,6 +27,13 @@ struct CodeAttribute : public JavaAttribute {
 	void parse();
 	std::vector<u1> get_bytes();
 
+    const auto get_max_stack() { return this->m_max_stack; }
+    const auto get_max_locals() { return this->m_max_locals; }
+    const auto get_code() { return this->m_code; };
+    const auto get_exception_table() { return this->m_exception_table; }
+    const auto get_attributes() { return this->m_attributes; }
+
+private:
 	u2 m_max_stack;
 	u2 m_max_locals;
 

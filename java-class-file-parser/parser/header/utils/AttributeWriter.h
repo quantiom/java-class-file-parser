@@ -9,10 +9,10 @@ public:
 
 		for (const auto& attribute_ptr : attributes) {
 			std::visit([this](auto& attribute) {
-				this->write_u2(attribute.m_name_index);
-				this->write_u4((u4)attribute.m_info.size());
+				this->write_u2(attribute.get_name_index());
+				this->write_u4((u4)attribute.get_info().size());
 
-				for (const auto& byte : attribute.m_info) {
+				for (const auto& byte : attribute.get_info()) {
 					this->write_u1(byte);
 				}
 			}, *attribute_ptr);

@@ -14,6 +14,13 @@ int main() {
     std::unique_ptr<JavaClass> java_class(new JavaClass(data));
     java_class->parse(); // main stuff is done here
 
+    for (const auto& field : java_class->get_fields()) {
+        if (field->get_name() == "someField") {
+            field->set_deprecated(false);
+            field->remove_annotation("Ljdk/nashorn/internal/runtime/logging/Logger;");
+        }
+    }
+
     const auto new_bytes = java_class->get_bytes();
 
     std::ofstream("C:\\Users\\user\\Desktop\\NewTest.class", std::ios::binary).write((char*)new_bytes.data(), new_bytes.size());

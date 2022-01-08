@@ -18,6 +18,12 @@ struct RuntimeAnnotationsAttribute : public AnnotationAttribute {
 	void parse();
 	std::vector<u1> get_bytes();
 
+	const auto is_visible() { return this->m_is_visible; }
+	const auto get_annotations() { return this->m_annotations; }
+	void add_annotation(JavaAnnotation* annotation);
+	void remove_annotation(const std::string& name);
+
+private:
 	bool m_is_visible; // false if this is a RuntimeInvisibleAnnotationsAttribute 
 	std::vector<JavaAnnotation*> m_annotations;
 };

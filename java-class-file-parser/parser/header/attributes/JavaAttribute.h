@@ -17,13 +17,17 @@ struct JavaAttribute : public ByteReader {
 	JavaAttribute(JavaClass* java_class, std::shared_ptr<JavaAttribute>& attribute)
 		: JavaAttribute(java_class, attribute->m_name_index, attribute->m_info) {};
 
-	u2 m_name_index;
-	std::vector<u1> m_info;
-
-	// utility methods/fields
-
 	virtual void parse() {};
 	virtual std::vector<u1> get_bytes() { return this->m_info; };
+	void update() { this->set_info(this->get_bytes()); }
 
 	std::string get_name();
+	const auto get_name_index() { return this->m_name_index; }
+
+	const auto get_info() { return this->m_info; }
+	void set_info(std::vector<u1> info) { this->m_info = info; };
+
+protected:
+	u2 m_name_index;
+	std::vector<u1> m_info;
 };

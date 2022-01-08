@@ -24,3 +24,19 @@ std::vector<u1> RuntimeAnnotationsAttribute::get_bytes() {
 
 	return writer->m_bytes;
 }
+
+void RuntimeAnnotationsAttribute::add_annotation(JavaAnnotation* annotation) {
+	this->m_annotations.push_back(annotation);
+	this->update();
+}
+
+void RuntimeAnnotationsAttribute::remove_annotation(const std::string& name) {
+	for (auto it = this->m_annotations.begin(); it != this->m_annotations.end(); it++) {
+		std::cout << (*it)->get_name() << "\n";
+		if ((*it)->get_name() == name) {
+			this->m_annotations.erase(it--);
+		}
+	}
+
+	this->update();
+}

@@ -69,10 +69,10 @@ std::vector<u1> JavaClass::get_bytes() {
 	writer->write_u2((u2)this->m_fields.size());
 
 	for (const auto& field : this->m_fields) {
-		writer->write_u2(field->m_access_flags);
-		writer->write_u2(field->m_name_index);
-		writer->write_u2(field->m_descriptor_index);
-		writer->write_attributes(field->m_attributes);
+		writer->write_u2(field->get_access_flags());
+		writer->write_u2(field->get_name_index());
+		writer->write_u2(field->get_descriptor_index());
+		writer->write_attributes(field->get_attributes());
 	}
 
 	// methods
@@ -240,7 +240,7 @@ void JavaClass::parse_methods() {
 
 			if (this->get_constant_pool().get_string(name_index) == "main") {
 				if (auto code_attribute = std::get_if<CodeAttribute>(&(*attribute)); code_attribute != nullptr) {
-					std::cout << "max stack: " << code_attribute->m_max_stack << "\n";
+					std::cout << "max stack: " << code_attribute->get_max_stack() << "\n";
 				}
 			}
 		}

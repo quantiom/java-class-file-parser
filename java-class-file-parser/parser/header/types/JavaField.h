@@ -10,20 +10,16 @@ struct JavaField : public JavaType {
 	JavaField(JavaClass* java_class, u2 access_flags, u2 name_index, u2 descriptor_index, std::vector<std::shared_ptr<ParsedAttribute>> attributes) 
 		: JavaType(java_class), m_access_flags(access_flags), m_name_index(name_index), m_descriptor_index(descriptor_index), m_attributes(attributes) {
 		for (const auto& attribute : this->m_attributes) {
-			std::visit([this](auto& a) { 
-				if (a.get_name() == "Deprecated") {
-					this->m_deprecated = true;
-				}
-			}, *attribute);
+			if (std::get_if<DeprecatedAttribute>(&(*attribute)) != nullptr) {
+				this->m_deprecated = true;
+			}
 		}
 	};
 
-	u2 m_access_flags;
-	u2 m_name_index;
-	u2 m_descriptor_index;
-	std::vector<std::shared_ptr<ParsedAttribute>> m_attributes;
-
-	// utility methods & fields
+	const auto get_access_flags() { return this->m_access_flags; }
+	const auto get_name_index() { return this->m_name_index; }
+	const auto get_descriptor_index() { return this->m_descriptor_index; }
+	const auto get_attributes() { return this->m_attributes; }
 
 	std::string get_name();
 	std::string get_descriptor();
@@ -40,7 +36,15 @@ struct JavaField : public JavaType {
 	// TODO: get_attribute<T>()
 
 	const std::vector<JavaAnnotation*> get_annotations();
+	const void add_annotation(JavaAnnotation* annotation);
+	const void remove_annotation(const std::string& name);
 
 private:
+	u2 m_access_flags;
+	u2 m_name_index;
+	u2 m_descriptor_index;
+
+	std::vector<std::shared_ptr<ParsedAttribute>> m_attributes;
+
 	bool m_deprecated = false;
 };

@@ -15,6 +15,9 @@ struct ConstantValueAttribute : public JavaAttribute {
 	void parse();
 	std::vector<u1> get_bytes();
 
+	const auto get_constantvalue_index() { return this->m_constantvalue_index; }
+
+private:
 	// index of the constant value in the constant pool
 	u2 m_constantvalue_index;
 };
