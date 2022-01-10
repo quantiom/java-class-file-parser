@@ -15,19 +15,20 @@ std::optional<ConstantPoolEntryInfo> ConstantPool::get_entry(size_t idx) {
 std::string ConstantPool::get_string(size_t idx) {
 	const auto entry = this->get_entry(idx);
 
-	if (!entry.has_value() || (
+	/*if (!entry.has_value() || (
 		(ConstantPoolType)entry->m_tag != ConstantPoolType::CONSTANT_Utf8 
 		&& (ConstantPoolType)entry->m_tag != ConstantPoolType::CONSTANT_Class
+		&& (ConstantPoolType)entry->m_tag != ConstantPoolType::CONSTANT_Fieldref
 		&& (ConstantPoolType)entry->m_tag != ConstantPoolType::CONSTANT_String)) {
 		throw std::invalid_argument("Constant pool index is invalid or not a string.");
-	}
+	}*/
 
 	const auto type = (ConstantPoolType)entry->m_tag;
 	const auto bytes = entry->m_info;
 
 	if (type == ConstantPoolType::CONSTANT_Utf8) {
 		std::string str{};
-		const auto str_length = (u2)(bytes[0] + bytes[1]);
+		const auto str_length = (u2)((bytes[0] << 8) | bytes[1]);
 
 		for (auto i = 0; i < str_length; i++) {
 			str += bytes[2 + i];
@@ -35,8 +36,12 @@ std::string ConstantPool::get_string(size_t idx) {
 
 		return str;
 	} else if (type == ConstantPoolType::CONSTANT_String || type == ConstantPoolType::CONSTANT_Class) {
-		return this->get_string(bytes[0] + bytes[1]);
+		return this->get_string((bytes[0] << 8) | bytes[1]);
+	} else if (type == ConstantPoolType::CONSTANT_Fieldref || type == ConstantPoolType::CONSTANT_InterfaceMethodref || type == ConstantPoolType::CONSTANT_InvokeDynamic || type == ConstantPoolType::CONSTANT_NameAndType || type == ConstantPoolType::CONSTANT_Methodref) {
+		return this->get_string((bytes[0] << 8) | bytes[1]) + ":" + this->get_string((bytes[2] << 8) | bytes[3]);
 	}
+
+	return "";
 }
 
 std::string ConstantPool::get_method_type(size_t idx) {

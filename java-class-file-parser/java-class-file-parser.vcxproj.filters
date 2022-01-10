@@ -48,6 +48,9 @@
     <ClCompile Include="parser\source\utils\AttributeReader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="parser\source\types\JavaMethod.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="parser\header\defines.h">
@@ -108,6 +111,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="parser\header\types\AttributeHolder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\header\utils\magic_enum.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

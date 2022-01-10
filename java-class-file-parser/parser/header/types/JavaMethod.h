@@ -1,6 +1,7 @@
 #pragma once
 #include "../defines.h"
 #include "../attributes/ParsedAttribute.h"
+#include "AttributeHolder.h"
 #include "JavaType.h"
 
 // https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.6
@@ -17,6 +18,9 @@ struct JavaMethod : public AttributeHolder {
 	const void set_access_flags(u2 access_flags) { this->m_access_flags = access_flags; }
 	const void set_name_index(u2 name_index) { this->m_name_index = name_index; }
 	const void set_descriptor_index(u2 descriptor_index) { this->m_descriptor_index = descriptor_index; }
+
+	std::string get_name();
+	std::string get_descriptor();
 
 private:
 	u2 m_access_flags;

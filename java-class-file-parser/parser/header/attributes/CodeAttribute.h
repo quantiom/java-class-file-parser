@@ -242,6 +242,7 @@ struct CodeAttribute : public JavaAttribute {
     const auto get_attributes() { return this->m_attributes; }
 
 	void print_code();
+
 private:
 	u2 m_max_stack;
 	u2 m_max_locals;

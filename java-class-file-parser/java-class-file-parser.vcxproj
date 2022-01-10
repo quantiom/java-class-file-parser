@@ -142,6 +142,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="parser\source\types\JavaMethod.cpp" />
     <ClCompile Include="parser\source\attributes\CodeAttribute.cpp" />
     <ClCompile Include="parser\source\attributes\AnnotationAttribute.cpp" />
     <ClCompile Include="parser\source\attributes\ConstantValueAttribute.cpp" />
@@ -174,6 +175,7 @@
     <ClInclude Include="parser\header\utils\ByteWriter.h" />
     <ClInclude Include="parser\header\utils\ConstantPool.h" />
     <ClInclude Include="parser\header\utils\FnvHash.h" />
+    <ClInclude Include="parser\header\utils\magic_enum.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

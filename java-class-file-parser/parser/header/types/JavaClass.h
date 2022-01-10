@@ -28,7 +28,7 @@ enum class AccessFlags {
 
 class JavaClass : public AttributeReader, public AttributeHolder {
 public:
-	JavaClass(std::vector<u1> bytes) : AttributeHolder(this), AttributeReader(this, bytes) {
+	JavaClass(std::vector<u1> bytes) : AttributeReader(this, bytes), AttributeHolder(this) {
 		this->m_constant_pool = ConstantPool();
 	};
 

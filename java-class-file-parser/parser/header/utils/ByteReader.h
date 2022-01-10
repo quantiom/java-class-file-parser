@@ -44,6 +44,18 @@ public:
 		return this->m_bytes[idx];
 	}
 
+	auto get_current_byte_index() {
+		return this->m_current_byte_index;
+	}
+
+	void set_current_byte_index(auto index) {
+		this->m_current_byte_index = index;
+	}
+
+	const auto get_bytes() {
+		return this->m_bytes;
+	}
+
 protected:
 	// bytes
 	size_t m_current_byte_index;

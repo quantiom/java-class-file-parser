@@ -21,6 +21,14 @@ int main() {
         }
     }
 
+    for (const auto& method : java_class->get_methods()) {
+        if (method->get_name() == "main") {
+            if (auto code_attribute = method->get_attribute<CodeAttribute>()) {
+                std::get<CodeAttribute>(**code_attribute).print_code();
+            }
+        }
+    }
+
     const auto new_bytes = java_class->get_bytes();
 
     std::ofstream("C:\\Users\\user\\Desktop\\NewTest.class", std::ios::binary).write((char*)new_bytes.data(), new_bytes.size());

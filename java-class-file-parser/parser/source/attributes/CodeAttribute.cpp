@@ -1,4 +1,6 @@
 #include "../../header/attributes/CodeAttribute.h"
+#include "../../header/types/JavaClass.h"
+#include "../../header/utils/magic_enum.h"
 
 void CodeAttribute::parse() {
 	this->m_max_stack = this->read_u2();
@@ -45,4 +47,56 @@ std::vector<u1> CodeAttribute::get_bytes() {
 }
 
 void CodeAttribute::print_code() {
+	static std::vector<BytecodeInstruction> TWO_BYTE_ARG_INSTRUCTIONS{
+		BytecodeInstruction::ANEWARRAY,
+		BytecodeInstruction::CHECKCAST,
+		BytecodeInstruction::GETFIELD,
+		BytecodeInstruction::GETSTATIC,
+		BytecodeInstruction::GOTO,
+		BytecodeInstruction::IF_ACMPEQ,
+		BytecodeInstruction::IF_ACMPNE,
+		BytecodeInstruction::IF_ICMPEQ,
+		BytecodeInstruction::IF_ICMPGE,
+		BytecodeInstruction::IF_ICMPGT,
+		BytecodeInstruction::IF_ICMPLE,
+		BytecodeInstruction::IF_ICMPLT,
+		BytecodeInstruction::IF_ICMPNE,
+		BytecodeInstruction::IFEQ,
+		BytecodeInstruction::IFGE,
+		BytecodeInstruction::IFGT,
+		BytecodeInstruction::IFLE,
+		BytecodeInstruction::IFLT,
+		BytecodeInstruction::IFNE,
+		BytecodeInstruction::IFNONNULL,
+		BytecodeInstruction::IFNULL,
+		BytecodeInstruction::IINC,
+		BytecodeInstruction::INSTANCEOF,
+		BytecodeInstruction::INVOKESPECIAL,
+		BytecodeInstruction::INVOKESTATIC,
+		BytecodeInstruction::INVOKEVIRTUAL,
+		BytecodeInstruction::JSR,
+		BytecodeInstruction::LDC_W,
+		BytecodeInstruction::LDC2_W,
+		BytecodeInstruction::NEW,
+		BytecodeInstruction::PUTFIELD,
+		BytecodeInstruction::PUTSTATIC,
+		BytecodeInstruction::SIPUSH,
+	};
+
+	auto reader = std::make_unique<ByteReader>(ByteReader(this->m_java_class, this->m_code));
+
+	for (int i = 0; i < this->m_code.size(); i++) {
+		auto instruction = (BytecodeInstruction)reader->read_u1();
+
+		const auto is_two_byte_arg_instruction = std::find(TWO_BYTE_ARG_INSTRUCTIONS.begin(), TWO_BYTE_ARG_INSTRUCTIONS.end(), instruction) != TWO_BYTE_ARG_INSTRUCTIONS.end();
+		const auto u16_idx = reader->get_bytes().size() - 1 - reader->get_current_byte_index() >= 2 && is_two_byte_arg_instruction ? reader->read_u2() : (u2)-1;
+
+		if (is_two_byte_arg_instruction) {
+			std::cout << magic_enum::enum_name(instruction) << " #" << u16_idx << " // " << this->m_java_class->get_constant_pool().get_string(u16_idx) << "\n";
+		}
+
+		if (is_two_byte_arg_instruction) {
+			i += 4;
+		}
+	}
 }
