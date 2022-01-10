@@ -32,7 +32,6 @@ void RuntimeAnnotationsAttribute::add_annotation(JavaAnnotation* annotation) {
 
 void RuntimeAnnotationsAttribute::remove_annotation(const std::string& name) {
 	for (auto it = this->m_annotations.begin(); it != this->m_annotations.end(); it++) {
-		std::cout << (*it)->get_name() << "\n";
 		if ((*it)->get_name() == name) {
 			this->m_annotations.erase(it--);
 		}

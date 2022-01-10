@@ -33,11 +33,15 @@ struct JavaField : public JavaType {
 	// only works if the field is final
 	size_t get_constant_value_index();
 
-	// TODO: get_attribute<T>()
+	template <typename T>
+	std::optional<std::shared_ptr<ParsedAttribute>> get_attribute();
 
-	const std::vector<JavaAnnotation*> get_annotations();
-	const void add_annotation(JavaAnnotation* annotation);
-	const void remove_annotation(const std::string& name);
+	template <typename T>
+	void remove_attribute();
+
+	const std::vector<JavaAnnotation*> get_annotations(bool runtime_visible);
+	const void add_annotation(JavaAnnotation* annotation, bool runtime_visible);
+	const void remove_annotation(const std::string& name, bool runtime_visible);
 
 private:
 	u2 m_access_flags;

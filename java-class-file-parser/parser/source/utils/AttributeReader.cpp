@@ -23,8 +23,10 @@ std::shared_ptr<ParsedAttribute> AttributeReader::read_attribute() {
 			attribute = std::make_shared<ParsedAttribute>(DeprecatedAttribute(this->m_java_class, attribute_name_index, attribute_info));
 			break;
 		case hash::Fnv1a<uint32_t>("RuntimeInvisibleAnnotations"):
+			attribute = std::make_shared<ParsedAttribute>(RuntimeInvisibleAnnotationsAttribute(this->m_java_class, attribute_name_index, attribute_info));
+			break;
 		case hash::Fnv1a<uint32_t>("RuntimeVisibleAnnotations"):
-			attribute = std::make_shared<ParsedAttribute>(RuntimeAnnotationsAttribute(this->m_java_class, attribute_name_index, attribute_info));
+			attribute = std::make_shared<ParsedAttribute>(RuntimeVisibleAnnotationsAttribute(this->m_java_class, attribute_name_index, attribute_info));
 			break;
 		default:
 			attribute = std::make_shared<ParsedAttribute>(JavaAttribute(this->m_java_class, attribute_name_index, attribute_info));

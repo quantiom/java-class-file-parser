@@ -7,4 +7,4 @@
 #include "RuntimeAnnotationsAttribute.h"
 #include "DeprecatedAttribute.h"
 
-using ParsedAttribute = std::variant<JavaAttribute, DeprecatedAttribute, RuntimeAnnotationsAttribute, ConstantValueAttribute, CodeAttribute>;
+using ParsedAttribute = std::variant<JavaAttribute, DeprecatedAttribute, RuntimeVisibleAnnotationsAttribute, RuntimeInvisibleAnnotationsAttribute, ConstantValueAttribute, CodeAttribute>;

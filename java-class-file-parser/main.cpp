@@ -17,7 +17,7 @@ int main() {
     for (const auto& field : java_class->get_fields()) {
         if (field->get_name() == "someField") {
             field->set_deprecated(false);
-            field->remove_annotation("Ljdk/nashorn/internal/runtime/logging/Logger;");
+            field->remove_annotation("Ljdk/nashorn/internal/runtime/logging/Logger;", true);
         }
     }
 
