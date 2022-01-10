@@ -43,3 +43,6 @@ void CodeAttribute::parse() {
 std::vector<u1> CodeAttribute::get_bytes() {
 	return this->get_info();
 }
+
+void CodeAttribute::print_code() {
+}
