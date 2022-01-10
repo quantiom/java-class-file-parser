@@ -161,7 +161,6 @@
     <ClInclude Include="parser\header\attributes\JavaAttribute.h" />
     <ClInclude Include="parser\header\attributes\ParsedAttribute.h" />
     <ClInclude Include="parser\header\attributes\RuntimeAnnotationsAttribute.h" />
-    <ClInclude Include="parser\header\bytecode\Bytecode.h" />
     <ClInclude Include="parser\header\defines.h" />
     <ClInclude Include="parser\header\types\JavaAnnotation.h" />
     <ClInclude Include="parser\header\types\JavaClass.h" />

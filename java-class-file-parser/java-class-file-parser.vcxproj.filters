@@ -92,9 +92,6 @@
     <ClInclude Include="parser\header\attributes\CodeAttribute.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="parser\header\bytecode\Bytecode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="parser\header\attributes\ParsedAttribute.h">
       <Filter>Header Files</Filter>
     </ClInclude>
