@@ -86,7 +86,7 @@ std::vector<u1> JavaClass::get_bytes() {
 	}
 
 	// class attributes
-	writer->write_attributes(this->m_class_attributes);
+	writer->write_attributes(this->m_attributes);
 
 	// return the written bytes
 	return writer->m_bytes;
@@ -96,16 +96,28 @@ ConstantPool JavaClass::get_constant_pool() {
 	return this->m_constant_pool;
 }
 
-std::vector<JavaField*> JavaClass::get_fields() {
+const std::vector<JavaField*> JavaClass::get_fields() {
 	return this->m_fields;
 }
 
-std::vector<JavaMethod*> JavaClass::get_methods() {
+const std::vector<JavaMethod*> JavaClass::get_methods() {
 	return this->m_methods;
 }
 
-std::vector<std::shared_ptr<ParsedAttribute>> JavaClass::get_class_attributes() {
-	return this->m_class_attributes;
+void JavaClass::set_minor_version(u2 new_minor_version) {
+	this->m_minor_version = new_minor_version;
+}
+
+void JavaClass::set_major_version(u2 new_major_version) {
+	this->m_major_version = new_major_version;
+}
+
+void JavaClass::set_access_flags(u2 new_access_flags) {
+	this->m_access_flags = new_access_flags;
+}
+
+void JavaClass::set_super_class_idx(u2 new_class_idx) {
+	this->m_super_class_idx = new_class_idx;
 }
 
 // TODO: move to ConstantPool class
@@ -235,14 +247,7 @@ void JavaClass::parse_methods() {
 		std::vector<std::shared_ptr<ParsedAttribute>> attributes;
 
 		for (auto j = 0; j < attribute_count; j++) {
-			const auto attribute = this->read_attribute();
-			attributes.push_back(attribute);
-
-			if (this->get_constant_pool().get_string(name_index) == "main") {
-				if (auto code_attribute = std::get_if<CodeAttribute>(&(*attribute)); code_attribute != nullptr) {
-					std::cout << "max stack: " << code_attribute->get_max_stack() << "\n";
-				}
-			}
+			attributes.push_back(this->read_attribute());
 		}
 
 		this->m_methods.push_back(new JavaMethod(this, access_flags, name_index, descriptor_index, attributes));
@@ -253,6 +258,6 @@ void JavaClass::parse_attributes() {
 	const auto attributes_count = this->read_u2();
 
 	for (auto i = 0; i < attributes_count; i++) {
-		this->m_class_attributes.push_back(this->read_attribute());
+		this->m_attributes.push_back(this->read_attribute());
 	}
 }

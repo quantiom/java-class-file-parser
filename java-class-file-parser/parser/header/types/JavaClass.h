@@ -26,9 +26,9 @@ enum class AccessFlags {
 	ACC_ENUM = 0x4000,
 };
 
-class JavaClass : public AttributeReader {
+class JavaClass : public AttributeReader, public AttributeHolder {
 public:
-	JavaClass(std::vector<u1> bytes) : AttributeReader(this, bytes) {
+	JavaClass(std::vector<u1> bytes) : AttributeHolder(this), AttributeReader(this, bytes) {
 		this->m_constant_pool = ConstantPool();
 	};
 
@@ -40,9 +40,16 @@ public:
 
 	// getters
 	ConstantPool get_constant_pool();
-	std::vector<JavaField*> get_fields();
-	std::vector<JavaMethod*> get_methods();
-	std::vector<std::shared_ptr<ParsedAttribute>> get_class_attributes();
+	const std::vector<JavaField*> get_fields();
+	const std::vector<JavaMethod*> get_methods();
+
+	// setters
+	void set_minor_version(u2 new_minor_version);
+	void set_major_version(u2 new_major_version);
+	void set_access_flags(u2 new_access_flags);
+	void set_super_class_idx(u2 new_class_idx);
+
+	// todo: add_field(...)
 
 private:
 	void parse_constant_pool();
@@ -50,8 +57,6 @@ private:
 	void parse_fields();
 	void parse_methods();
 	void parse_attributes();
-
-	// todo: add_field(...)
 
 	// version the class was compiled for
 	u2 m_minor_version;
@@ -75,7 +80,4 @@ private:
 
 	// methods
 	std::vector<JavaMethod*> m_methods;
-
-	// class attributes
-	std::vector<std::shared_ptr<ParsedAttribute>> m_class_attributes;
 };

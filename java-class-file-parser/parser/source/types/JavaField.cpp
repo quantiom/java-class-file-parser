@@ -40,37 +40,11 @@ size_t JavaField::get_constant_value_index() {
 		throw std::runtime_error("This field is not constant.");
 	}
 
-	for (const auto& attribute : this->m_attributes) {
-		if (auto constant_value_attribute = std::get_if<ConstantValueAttribute>(&(*attribute)); constant_value_attribute != nullptr) {
-			return constant_value_attribute->get_constantvalue_index();
-		}
+	if (auto constant_value_attribute = this->get_attribute<ConstantValueAttribute>()) {
+		return std::get<ConstantValueAttribute>(**constant_value_attribute).get_constantvalue_index();
 	}
 
 	return 0;
-}
-
-template<typename T>
-std::optional<std::shared_ptr<ParsedAttribute>> JavaField::get_attribute() {
-	const auto ret = std::find_if(this->m_attributes.begin(), this->m_attributes.end(),
-		[](std::shared_ptr<ParsedAttribute> attribute) -> bool { return std::get_if<T>(&(*attribute)) != nullptr; });
-
-	if (ret != this->m_attributes.end()) {
-		return *ret;
-	} else {
-		return {};
-	}
-}
-
-template<typename T>
-void JavaField::remove_attribute() {
-	for (auto it = this->m_attributes.begin(); it != this->m_attributes.end(); it++) {
-		auto attribute_ptr = *it;
-
-		if (std::get_if<T>(&(*attribute_ptr)) != nullptr) {
-			this->m_attributes.erase(it--);
-			break;
-		}
-	}
 }
 
 const std::vector<JavaAnnotation*> JavaField::get_annotations(bool runtime_visible) {

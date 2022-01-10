@@ -53,18 +53,18 @@ public:
 
 	// gets the index of a UTF8 string from the constant pool
 	// or adds it if it does not exist
-	size_t get_or_add_utf8(std::string str);
+	u2 get_or_add_utf8(std::string str);
 
 	// gets the index of an integer from the constant pool
 	// or adds it if it does not exist
-	size_t get_or_add_integer(u4 integer);
+	u2 get_or_add_integer(u4 integer);
 
 	std::vector<ConstantPoolEntryInfo> get_entries();
 	size_t get_size();
 private:
 	// cache
-	std::unordered_map<std::string, size_t> m_cached_strings;
-	std::unordered_map<u4, size_t> m_cached_integers;
+	std::unordered_map<std::string, u2> m_cached_strings;
+	std::unordered_map<u4, u2> m_cached_integers;
 	
 	std::vector<ConstantPoolEntryInfo> m_entries;
 };

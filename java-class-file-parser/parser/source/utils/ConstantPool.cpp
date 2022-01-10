@@ -100,7 +100,7 @@ float ConstantPool::get_float(size_t idx) {
 	const auto bytes = entry->m_info;
 	const std::vector<u1> backwards = { bytes[3], bytes[2], bytes[1], bytes[0] };
 
-	return *(u4*)backwards.data();
+	return *(float*)backwards.data();
 }
 
 double ConstantPool::get_double(size_t idx) {
@@ -129,7 +129,7 @@ long long ConstantPool::get_long(size_t idx) {
 	return *(long long*)reordered.data();
 }
 
-size_t ConstantPool::get_or_add_utf8(std::string str) {
+u2 ConstantPool::get_or_add_utf8(std::string str) {
 	if (this->m_cached_strings.contains(str)) {
 		return this->m_cached_strings.at(str);
 	}
@@ -160,7 +160,7 @@ size_t ConstantPool::get_or_add_utf8(std::string str) {
 	return new_idx;
 }
 
-size_t ConstantPool::get_or_add_integer(u4 integer) {
+u2 ConstantPool::get_or_add_integer(u4 integer) {
 	if (this->m_cached_integers.contains(integer)) {
 		return this->m_cached_integers.at(integer);
 	}

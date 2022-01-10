@@ -110,5 +110,8 @@
     <ClInclude Include="parser\header\utils\AttributeWriter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="parser\header\types\AttributeHolder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
