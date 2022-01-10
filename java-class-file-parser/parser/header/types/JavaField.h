@@ -28,9 +28,7 @@ struct JavaField : public AttributeHolder {
 	bool is_deprecated();
 	void set_deprecated(bool new_value);
 
-	// constant value index in the constant pool
-	// only works if the field is final
-	size_t get_constant_value_index();
+	std::optional<size_t> get_constant_value_index();
 
 	const std::vector<std::shared_ptr<JavaAnnotation>> get_annotations(bool runtime_visible);
 	const void add_annotation(std::shared_ptr<JavaAnnotation> annotation, bool runtime_visible);

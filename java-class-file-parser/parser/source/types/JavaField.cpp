@@ -35,16 +35,12 @@ void JavaField::set_deprecated(bool new_value) {
 	this->m_deprecated = new_value;
 }
 
-size_t JavaField::get_constant_value_index() {
-	if (!this->is_final()) {
-		throw std::runtime_error("This field is not constant.");
-	}
-
+std::optional<size_t> JavaField::get_constant_value_index() {
 	if (auto constant_value_attribute = this->get_attribute<ConstantValueAttribute>()) {
 		return std::get<ConstantValueAttribute>(**constant_value_attribute).get_constantvalue_index();
 	}
 
-	return 0;
+	return {};
 }
 
 const std::vector<std::shared_ptr<JavaAnnotation>> JavaField::get_annotations(bool runtime_visible) {
