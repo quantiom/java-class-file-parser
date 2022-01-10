@@ -15,7 +15,10 @@ struct JavaField : public AttributeHolder {
 	const auto get_access_flags() { return this->m_access_flags; }
 	const auto get_name_index() { return this->m_name_index; }
 	const auto get_descriptor_index() { return this->m_descriptor_index; }
-	const auto get_attributes() { return this->m_attributes; }
+
+	const void set_access_flags(u2 access_flags) { this->m_access_flags = access_flags; }
+	const void set_name_index(u2 name_index) { this->m_name_index = name_index; }
+	const void set_descriptor_index(u2 descriptor_index) { this->m_descriptor_index = descriptor_index; }
 
 	std::string get_name();
 	std::string get_descriptor();

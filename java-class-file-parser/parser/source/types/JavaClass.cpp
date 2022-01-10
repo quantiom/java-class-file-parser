@@ -79,10 +79,10 @@ std::vector<u1> JavaClass::get_bytes() {
 	writer->write_u2((u2)this->m_methods.size());
 
 	for (const auto& method : this->m_methods) {
-		writer->write_u2(method->m_access_flags);
-		writer->write_u2(method->m_name_index);
-		writer->write_u2(method->m_descriptor_index);
-		writer->write_attributes(method->m_attributes);
+		writer->write_u2(method->get_access_flags());
+		writer->write_u2(method->get_name_index());
+		writer->write_u2(method->get_descriptor_index());
+		writer->write_attributes(method->get_attributes());
 	}
 
 	// class attributes
