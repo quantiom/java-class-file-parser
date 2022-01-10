@@ -32,8 +32,8 @@ struct JavaField : public AttributeHolder {
 	// only works if the field is final
 	size_t get_constant_value_index();
 
-	const std::vector<JavaAnnotation*> get_annotations(bool runtime_visible);
-	const void add_annotation(JavaAnnotation* annotation, bool runtime_visible);
+	const std::vector<std::shared_ptr<JavaAnnotation>> get_annotations(bool runtime_visible);
+	const void add_annotation(std::shared_ptr<JavaAnnotation> annotation, bool runtime_visible);
 	const void remove_annotation(const std::string& name, bool runtime_visible);
 
 private:

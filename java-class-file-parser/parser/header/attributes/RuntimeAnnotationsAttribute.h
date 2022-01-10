@@ -21,12 +21,12 @@ struct RuntimeAnnotationsAttribute : public AnnotationAttribute {
 
 	const auto is_visible() { return this->m_is_visible; }
 	const auto get_annotations() { return this->m_annotations; }
-	void add_annotation(JavaAnnotation* annotation);
+	void add_annotation(std::shared_ptr<JavaAnnotation> annotation);
 	void remove_annotation(const std::string& name);
 
 private:
 	bool m_is_visible; // false if this is a RuntimeInvisibleAnnotationsAttribute 
-	std::vector<JavaAnnotation*> m_annotations;
+	std::vector<std::shared_ptr<JavaAnnotation>> m_annotations;
 };
 
 struct RuntimeVisibleAnnotationsAttribute : public RuntimeAnnotationsAttribute {
@@ -45,10 +45,8 @@ struct RuntimeInvisibleAnnotationsAttribute : public RuntimeAnnotationsAttribute
 	RuntimeInvisibleAnnotationsAttribute() : RuntimeAnnotationsAttribute() {};
 
 	RuntimeInvisibleAnnotationsAttribute(JavaClass* java_class, std::shared_ptr<JavaAttribute> attribute)
-		: RuntimeAnnotationsAttribute(java_class, attribute) {
-	};
+		: RuntimeAnnotationsAttribute(java_class, attribute) {};
 
 	RuntimeInvisibleAnnotationsAttribute(JavaClass* java_class, u2 name_index, std::vector<u1> info)
-		: RuntimeAnnotationsAttribute(java_class, name_index, info) {
-	};
+		: RuntimeAnnotationsAttribute(java_class, name_index, info) {};
 };

@@ -14,13 +14,13 @@ public:
 		: JavaAttribute(java_class, name_index, info) {};
 
 	// parse an annotation at the current byte index
-	JavaAnnotation* parse_annotation();
+	std::shared_ptr<JavaAnnotation> parse_annotation();
 
 	// parse an annotation element value at the current byte index
 	AnnotationElementValue* parse_element_value();
 
 	// write an annotation into a ByteWriter
-	void get_annotation_bytes(std::unique_ptr<ByteWriter>& writer, JavaAnnotation* annotation);
+	void get_annotation_bytes(std::unique_ptr<ByteWriter>& writer, std::shared_ptr<JavaAnnotation> annotation);
 
 	// write an annotation element value into a ByteWriter
 	void get_element_value_bytes(std::unique_ptr<ByteWriter>& writer, AnnotationElementValue* annotation);

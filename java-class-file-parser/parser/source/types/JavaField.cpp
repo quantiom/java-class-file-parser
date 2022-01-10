@@ -25,7 +25,7 @@ void JavaField::set_deprecated(bool new_value) {
 		return;
 
 	if (new_value) {
-		this->add_annotation(new JavaAnnotation(this->m_java_class, this->m_java_class->get_constant_pool().get_or_add_utf8("Ljava/lang/Deprecated;"), {}), true);
+		this->add_annotation(std::make_shared<JavaAnnotation>(JavaAnnotation(this->m_java_class, this->m_java_class->get_constant_pool().get_or_add_utf8("Ljava/lang/Deprecated;"), {})), true);
 		this->m_attributes.push_back(std::make_shared<ParsedAttribute>(JavaAttribute(this->m_java_class, this->m_java_class->get_constant_pool().get_or_add_utf8("Deprecated"), {})));
 	} else {
 		this->remove_attribute<DeprecatedAttribute>();
@@ -47,7 +47,7 @@ size_t JavaField::get_constant_value_index() {
 	return 0;
 }
 
-const std::vector<JavaAnnotation*> JavaField::get_annotations(bool runtime_visible) {
+const std::vector<std::shared_ptr<JavaAnnotation>> JavaField::get_annotations(bool runtime_visible) {
 	if (runtime_visible) {
 		if (auto attribute = this->get_attribute<RuntimeVisibleAnnotationsAttribute>())
 			return std::get<RuntimeVisibleAnnotationsAttribute>(**attribute).get_annotations();
@@ -59,7 +59,7 @@ const std::vector<JavaAnnotation*> JavaField::get_annotations(bool runtime_visib
 	return {};
 }
 
-const void JavaField::add_annotation(JavaAnnotation* annotation, bool runtime_visible) {
+const void JavaField::add_annotation(std::shared_ptr<JavaAnnotation> annotation, bool runtime_visible) {
 	std::shared_ptr<ParsedAttribute> attribute;
 
 	if (runtime_visible) {

@@ -24,7 +24,7 @@ struct AnnotationElementValue {
 
 	u2 m_class_info_index;
 
-	JavaAnnotation* m_annotation_value;
+	std::shared_ptr<JavaAnnotation> m_annotation_value;
 
 	struct {
 		std::vector<AnnotationElementValue*> m_element_values;

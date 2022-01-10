@@ -25,7 +25,7 @@ std::vector<u1> RuntimeAnnotationsAttribute::get_bytes() {
 	return writer->m_bytes;
 }
 
-void RuntimeAnnotationsAttribute::add_annotation(JavaAnnotation* annotation) {
+void RuntimeAnnotationsAttribute::add_annotation(std::shared_ptr<JavaAnnotation> annotation) {
 	this->m_annotations.push_back(annotation);
 	this->update();
 }
