@@ -241,7 +241,9 @@ struct CodeAttribute : public JavaAttribute {
     const auto get_exception_table() { return this->m_exception_table; }
     const auto get_attributes() { return this->m_attributes; }
 
-	void print_code();
+    // these names are horrible, I cannot think of anything else though
+	std::vector<std::string> get_code_string();
+	std::string get_constant_pool_string_for_code(u2 idx);
 
 private:
 	u2 m_max_stack;

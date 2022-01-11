@@ -22,9 +22,13 @@ int main() {
     }
 
     for (const auto& method : java_class->get_methods()) {
-        if (method->get_name() == "main") {
+        if (method->get_name() == "ifTest") {
             if (auto code_attribute = method->get_attribute<CodeAttribute>()) {
-                std::get<CodeAttribute>(**code_attribute).print_code();
+                const auto vec = std::get<CodeAttribute>(**code_attribute).get_code_string();
+            
+                for (const auto& line : vec) {
+                    std::cout << line << std::endl;
+                }
             }
         }
     }
