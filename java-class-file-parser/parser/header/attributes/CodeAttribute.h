@@ -10,6 +10,7 @@ struct ExceptionTableEntry {
     u2 m_catch_type;
 };
 
+// https://en.wikipedia.org/wiki/List_of_Java_bytecode_instructions
 enum class BytecodeInstruction {
     AALOAD = 0x32,
     AASTORE = 0x53,

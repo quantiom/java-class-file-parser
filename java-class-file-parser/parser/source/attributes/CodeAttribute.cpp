@@ -124,6 +124,10 @@ std::vector<std::string> CodeAttribute::get_code_string() {
 
 		if (std::find(TWO_BYTE_ARG_INSTRUCTIONS.begin(), TWO_BYTE_ARG_INSTRUCTIONS.end(), instruction) != TWO_BYTE_ARG_INSTRUCTIONS.end()) {
 			// TODO: jumps and labels
+			// I think it would be better to make a different method
+			// that returns a list of (Instruction, std::vector<u1>) and then parse it here.
+			// That way we could add a pseudo-instruction named something like "label"
+			// and insert it farther in the list. It would be much easier to calculate the byte offset.
 
 			const auto idx = reader->read_u2();
 			ss << instruction_name << " #" << idx << " // " << get_constant_pool_string_for_code(idx);
