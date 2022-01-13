@@ -159,7 +159,7 @@ u2 ConstantPool::get_or_add_utf8(std::string str) {
 
 	this->m_entries.push_back(ConstantPoolEntryInfo{ (int)ConstantPoolType::CONSTANT_Utf8, info });
 
-	const auto new_idx = this->m_entries.size();
+	const auto new_idx = (u2)this->m_entries.size();
 	this->m_cached_strings[str] = new_idx;
 
 	return new_idx;
@@ -185,7 +185,7 @@ u2 ConstantPool::get_or_add_integer(u4 integer) {
 
 	this->m_entries.push_back(ConstantPoolEntryInfo{ (int)ConstantPoolType::CONSTANT_Integer, info });
 
-	const auto new_idx = this->m_entries.size();
+	const auto new_idx = (u2)this->m_entries.size();
 	this->m_cached_integers[integer] = new_idx;
 
 	return new_idx;

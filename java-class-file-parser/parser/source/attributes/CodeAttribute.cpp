@@ -89,7 +89,7 @@ void CodeAttribute::parse() {
 
 		std::vector<u1> attribute_info;
 
-		for (auto k = 0; k < attribute_length; k++) {
+		for (size_t k = 0; k < attribute_length; k++) {
 			attribute_info.push_back(this->read_u1());
 		}
 
@@ -97,6 +97,8 @@ void CodeAttribute::parse() {
 
 		this->m_attributes.push_back(attribute);
 	}
+
+	this->parse_instructions();
 }
 
 std::vector<u1> CodeAttribute::get_bytes() {
@@ -107,6 +109,8 @@ std::vector<std::string> CodeAttribute::get_code_string() {
 	std::vector<std::string> list{};
 
 	auto reader = std::make_unique<ByteReader>(ByteReader(this->m_java_class, this->m_code));
+
+	std::cout << "instructions: " << this->m_instructions.size() << "\n";
 
 	for (int i = 0; i < this->m_code.size(); i++) {
 		std::cout << "0x" << std::hex << (int)this->m_code.at(i) << " ";
@@ -163,7 +167,7 @@ std::vector<std::string> CodeAttribute::get_code_string() {
 					const auto class_ref = reader->read_u2();
 					const auto dimensions = reader->read_u1();
 					ss << instruction_name << " #" << class_ref << " " << dimensions << " // " << get_constant_pool_string_for_code(class_ref);
-					i += 4;
+					i += 3;
 					break;
 				}
 				default:
@@ -178,6 +182,90 @@ std::vector<std::string> CodeAttribute::get_code_string() {
 	}
 
 	return list;
+}
+
+void CodeAttribute::parse_instructions() {
+	auto reader = std::make_unique<ByteReader>(ByteReader(this->m_java_class, this->m_code));
+
+	for (int i = 0; i < this->m_code.size(); i++) {
+		std::vector<u1> bytes;
+
+		const auto instruction = (BytecodeInstruction)reader->read_u1();
+		const auto is_two_byte_arg_instruction = std::find(TWO_BYTE_ARG_INSTRUCTIONS.begin(), TWO_BYTE_ARG_INSTRUCTIONS.end(), instruction) != TWO_BYTE_ARG_INSTRUCTIONS.end();
+
+		if (std::find(TWO_BYTE_ARG_INSTRUCTIONS.begin(), TWO_BYTE_ARG_INSTRUCTIONS.end(), instruction) != TWO_BYTE_ARG_INSTRUCTIONS.end()) {
+			bytes.push_back(reader->read_u1());
+			bytes.push_back(reader->read_u1());
+			i += 2;
+		} else if (std::find(ONE_BYTE_ARG_INSTRUCTIONS.begin(), ONE_BYTE_ARG_INSTRUCTIONS.end(), instruction) != ONE_BYTE_ARG_INSTRUCTIONS.end()) {
+			bytes.push_back(reader->read_u1());
+			i += 1;
+		} else {
+			switch (instruction) {
+				case BytecodeInstruction::INVOKEDYNAMIC:
+				case BytecodeInstruction::INVOKEINTERFACE:
+				case BytecodeInstruction::INVOKESPECIAL:
+				case BytecodeInstruction::JSR_W:
+				case BytecodeInstruction::GOTO_W: {
+					for (auto i = 0; i < 4; i++) bytes.push_back(this->read_u1());
+					i += 4;
+					break;
+				}
+				case BytecodeInstruction::MULTIANEWARRAY: {
+					bytes.push_back(reader->read_u1());
+					bytes.push_back(reader->read_u1());
+					bytes.push_back(reader->read_u1());
+					i += 3;
+					break;
+				}
+			}
+		}
+
+		this->m_instructions.push_back(std::make_pair(instruction, bytes));
+	}
+
+	auto actual_byte_index = 0;
+
+	for (int i = 0; i < this->m_instructions.size(); i++) {
+		const auto instruction = this->m_instructions.at(i);
+		const auto instruction_name = magic_enum::enum_name(instruction.first);
+
+		actual_byte_index += 1 + instruction.second.size();
+
+		if (instruction_name.starts_with("IF") || instruction_name.starts_with("GOTO")) {
+			int offset;
+
+			if (instruction.second.size() == 4) {
+				offset = (instruction.second[0] << 24) | (instruction.second[1] << 16) | (instruction.second[2] << 8) | instruction.second[3];
+			} else {
+				offset = (instruction.second[0] << 8) | instruction.second[1];
+			}
+
+			const auto label_index = this->m_current_label_index++;
+			this->m_label_to_address[label_index] = actual_byte_index + offset;
+		}
+	}
+
+	for (const auto& [k, v] : this->m_label_to_address) {
+		std::cout << "label: " << k << " ; address: " << v << "\n";
+	}
+
+	// jump A
+	// ...
+	// A:
+	// -> 10 is here ; LDC "AAA"
+
+	// LDC "Frog"
+	// INVOKEDYNAMIC BLABLA
+	// POP
+	// ICONST_0
+	// IFLT 10 // jump 10 bytes
+	// ICONST_1
+	// POP
+	// A: label a
+	// IFLT 20 // jump 20 bytes
+	// ICONST_0
+	// POP
 }
 
 std::string CodeAttribute::get_constant_pool_string_for_code(u2 idx) {

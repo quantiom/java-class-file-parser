@@ -7,7 +7,7 @@ std::shared_ptr<ParsedAttribute> AttributeReader::read_attribute() {
 
 	std::vector<u1> attribute_info;
 
-	for (auto k = 0; k < attribute_length; k++) {
+	for (size_t k = 0; k < attribute_length; k++) {
 		attribute_info.push_back(this->read_u1());
 	}
 

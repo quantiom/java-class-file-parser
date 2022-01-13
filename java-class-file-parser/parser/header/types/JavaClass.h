@@ -49,7 +49,7 @@ public:
 	void set_access_flags(u2 new_access_flags);
 	void set_super_class_idx(u2 new_class_idx);
 
-	// todo: add_field(...)
+	// TODO: add_field(...)
 
 private:
 	void parse_constant_pool();

@@ -1,6 +1,8 @@
 #pragma once
 #include "JavaAttribute.h"
 
+#include <unordered_map>
+
 // https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.3
 
 struct ExceptionTableEntry {
@@ -217,6 +219,7 @@ enum class BytecodeInstruction {
     SWAP = 0x5F,
     TABLESWITCH = 0xAA,
     WIDE = 0xC4,
+    LABEL = 0xFF // 4 bytes for label idx
 };
 
 // for attributes that can't have nested attributes
@@ -244,13 +247,21 @@ struct CodeAttribute : public JavaAttribute {
 
     // these names are horrible, I cannot think of anything else though
 	std::vector<std::string> get_code_string();
-	std::string get_constant_pool_string_for_code(u2 idx);
 
 private:
 	u2 m_max_stack;
 	u2 m_max_locals;
 
     std::vector<u1> m_code;
+    std::vector<std::pair<BytecodeInstruction, std::vector<u1>>> m_instructions;
     std::vector<ExceptionTableEntry> m_exception_table;
     std::vector<std::shared_ptr<BasicAttribute>> m_attributes;
+
+    std::unordered_map<u4, u2> m_label_to_address;
+    std::unordered_map<u4, std::string> m_label_index_to_string;
+
+    u4 m_current_label_index = 0;
+
+    void parse_instructions();
+	std::string get_constant_pool_string_for_code(u2 idx);
 };
