@@ -22,7 +22,7 @@ int main() {
     }
 
     for (const auto& method : java_class->get_methods()) {
-        if (method->get_name() == "ifTest") {
+        if (method->get_name() == "main") {
             if (auto code_attribute = method->get_attribute<CodeAttribute>()) {
                 const auto vec = std::get<CodeAttribute>(**code_attribute).get_code_string();
             

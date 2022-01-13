@@ -133,6 +133,8 @@ std::vector<std::string> CodeAttribute::get_code_string() {
 
 				if (instruction_type == BytecodeInstruction::LABEL) {
 					ss << this->m_label_to_name[idx] << ":";
+				} else if (instruction_type == BytecodeInstruction::IINC) {
+					ss << instruction_name << " " << ((idx >> 8) & 255) << " " << (idx & 255);
 				} else {
 					ss << instruction_name << " #" << idx << " // " << get_constant_pool_string_for_code(idx);
 				}
@@ -213,7 +215,7 @@ void CodeAttribute::parse_instructions() {
 
 	u2 current_label_index = 0;
 	std::unordered_map<u2, u4> label_to_address;
-	
+
 	for (int i = 0; i < this->m_code.size(); i++) {
 		std::vector<u1> bytes;
 
@@ -223,12 +225,12 @@ void CodeAttribute::parse_instructions() {
 
 		if (instruction_name.starts_with("IF") || instruction_name.starts_with("GOTO") || instruction_name.starts_with("JSR")) {
 			bool is_wide = instruction_name.ends_with("_W");
-			u4 offset;
+			s4 offset;
 
 			if (is_wide) {
 				offset = reader->read_u4();
 			} else {
-				offset = (u4)reader->read_u2();
+				offset = (s4)reader->read_s2();
 			}
 
 			const auto absolute_jump_address = current_address + offset;
@@ -265,10 +267,10 @@ void CodeAttribute::parse_instructions() {
 			}
 		} else {
 			if (std::find(TWO_BYTE_ARG_INSTRUCTIONS.begin(), TWO_BYTE_ARG_INSTRUCTIONS.end(), instruction) != TWO_BYTE_ARG_INSTRUCTIONS.end()) {
-				const auto offset = reader->read_u2();
+				const auto idx = reader->read_u2();
 
-				bytes.push_back((offset >> 8) & 255);
-				bytes.push_back(offset & 255);
+				bytes.push_back((idx >> 8) & 255);
+				bytes.push_back(idx & 255);
 
 				i += 2;
 			} else if (std::find(ONE_BYTE_ARG_INSTRUCTIONS.begin(), ONE_BYTE_ARG_INSTRUCTIONS.end(), instruction) != ONE_BYTE_ARG_INSTRUCTIONS.end()) {
@@ -279,8 +281,6 @@ void CodeAttribute::parse_instructions() {
 					case BytecodeInstruction::INVOKEDYNAMIC:
 					case BytecodeInstruction::INVOKEINTERFACE:
 					case BytecodeInstruction::INVOKESPECIAL:
-					case BytecodeInstruction::JSR_W:
-
 					case BytecodeInstruction::MULTIANEWARRAY: {
 						bytes.push_back(reader->read_u1());
 						bytes.push_back(reader->read_u1());

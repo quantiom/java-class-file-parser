@@ -26,6 +26,12 @@ public:
 		return ret;
 	}
 
+	s2 read_s2() {
+		const auto ret = this->read_s2(this->m_current_byte_index);
+		this->m_current_byte_index += 2;
+		return ret;
+	}
+
 	u1 read_u1() {
 		const auto ret = this->read_u1(this->m_current_byte_index);
 		this->m_current_byte_index += 1;
@@ -37,6 +43,10 @@ public:
 	}
 
 	u2 read_u2(size_t start_idx) {
+		return this->m_bytes[start_idx + 1] | (this->m_bytes[start_idx] << 8);
+	}
+
+	s2 read_s2(size_t start_idx) {
 		return this->m_bytes[start_idx + 1] | (this->m_bytes[start_idx] << 8);
 	}
 
