@@ -108,12 +108,6 @@ std::vector<u1> CodeAttribute::get_bytes() {
 std::vector<std::string> CodeAttribute::get_code_string() {
 	std::vector<std::string> list{};
 
-	for (int i = 0; i < this->m_code.size(); i++) {
-		std::cout << "0x" << std::hex << (int)this->m_code.at(i) << " ";
-	}
-
-	std::cout << "\n";
-
 	for (const auto instruction : this->m_instructions) {
 		std::stringstream ss;
 
@@ -123,49 +117,58 @@ std::vector<std::string> CodeAttribute::get_code_string() {
 
 		const auto reader = std::make_unique<ByteReader>(ByteReader(this->m_java_class, instruction_bytes));
 
-		if (instruction_bytes.size() == 2) {
-			const auto idx = reader->read_u2();
-			
-			// TODO: implement all other jump instructions
-			if (instruction_type == BytecodeInstruction::IFEQ) {
-				ss << instruction_name << " " << this->m_label_to_name[idx];
-			} else if (instruction_type == BytecodeInstruction::LABEL) {
-				ss << "\nLABEL " << this->m_label_to_name[idx] << ":";
-			} else {
-				ss << instruction_name << " #" << idx << " // " << get_constant_pool_string_for_code(idx);
-			}
-		} else if (instruction_bytes.size() == 1) {
-			const auto idx = reader->read_u1();
+		if (instruction_name.starts_with("IF") || instruction_name.starts_with("GOTO") || instruction_name.starts_with("JSR")) {
+			u4 label_idx;
 
-			if (instruction_type == BytecodeInstruction::LDC) {
-				ss << instruction_name << " " << this->get_constant_pool_string_for_code((u2)idx);
+			if (instruction_name.ends_with("_W")) {
+				label_idx = reader->read_u4();
 			} else {
-				ss << instruction_name << " " << (u4)idx;
+				label_idx = reader->read_u2();
 			}
+
+			ss << instruction_name << " " << this->m_label_to_name[label_idx];
 		} else {
-			switch (instruction.first) {
-				case BytecodeInstruction::INVOKEDYNAMIC:
-				case BytecodeInstruction::INVOKEINTERFACE:
-				case BytecodeInstruction::INVOKESPECIAL: {
-					const auto idx = reader->read_u2();
+			if (instruction_bytes.size() == 2) {
+				const auto idx = reader->read_u2();
+
+				if (instruction_type == BytecodeInstruction::LABEL) {
+					ss << this->m_label_to_name[idx] << ":";
+				} else {
 					ss << instruction_name << " #" << idx << " // " << get_constant_pool_string_for_code(idx);
-					break;
 				}
-				case BytecodeInstruction::JSR_W:
-				case BytecodeInstruction::GOTO_W: {
-					const auto offset = reader->read_u4();
-					ss << instruction_name << " " << offset;
-					break;
+			} else if (instruction_bytes.size() == 1) {
+				const auto idx = reader->read_u1();
+
+				if (instruction_type == BytecodeInstruction::LDC) {
+					ss << instruction_name << " " << this->get_constant_pool_string_for_code((u2)idx);
+				} else {
+					ss << instruction_name << " " << (u4)idx;
 				}
-				case BytecodeInstruction::MULTIANEWARRAY: {
-					const auto class_ref = reader->read_u2();
-					const auto dimensions = reader->read_u1();
-					ss << instruction_name << " #" << class_ref << " " << dimensions << " // " << get_constant_pool_string_for_code(class_ref);
-					break;
+			} else {
+				switch (instruction.first) {
+					case BytecodeInstruction::INVOKEDYNAMIC:
+					case BytecodeInstruction::INVOKEINTERFACE:
+					case BytecodeInstruction::INVOKESPECIAL: {
+						const auto idx = reader->read_u2();
+						ss << instruction_name << " #" << idx << " // " << get_constant_pool_string_for_code(idx);
+						break;
+					}
+					case BytecodeInstruction::JSR_W:
+					case BytecodeInstruction::GOTO_W: {
+						const auto offset = reader->read_u4();
+						ss << instruction_name << " " << offset;
+						break;
+					}
+					case BytecodeInstruction::MULTIANEWARRAY: {
+						const auto class_ref = reader->read_u2();
+						const auto dimensions = reader->read_u1();
+						ss << instruction_name << " #" << class_ref << " " << dimensions << " // " << get_constant_pool_string_for_code(class_ref);
+						break;
+					}
+					default:
+						ss << instruction_name;
+						break;
 				}
-				default:
-					ss << instruction_name;
-					break;
 			}
 		}
 
@@ -177,6 +180,33 @@ std::vector<std::string> CodeAttribute::get_code_string() {
 	return list;
 }
 
+// Credit: https://github.com/Col-E/Recaf/blob/56c3b78d07caebbb3aa07ccc0a1d91200749f098/src/main/java/me/coley/recaf/util/StringUtil.java#L56-L81
+std::string CodeAttribute::get_label_name(u2 idx) {
+	static const std::vector<char> letters{ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
+
+	std::string str;
+	int alphabetLength = letters.size();
+	int m = 8;
+	char* chars = new char[m];
+	int n = m - 1;
+
+	while (idx > letters.size() - 1) {
+		int k = abs(-(idx % alphabetLength));
+		chars[n--] = letters[k];
+		idx /= alphabetLength;
+		idx -= 1;
+	}
+
+	chars[n] = letters[idx];
+
+	for (int i = 0; i < m - n; i++) {
+		str += chars[n + i];
+	}
+
+	return str;
+}
+
+// TODO: lookupswitch & tableswitch 
 void CodeAttribute::parse_instructions() {
 	auto reader = std::make_unique<ByteReader>(ByteReader(this->m_java_class, this->m_code));
 
@@ -189,80 +219,82 @@ void CodeAttribute::parse_instructions() {
 		std::vector<u1> bytes;
 
 		const auto instruction = (BytecodeInstruction)reader->read_u1();
+		const auto instruction_name = magic_enum::enum_name(instruction);
 		const auto is_two_byte_arg_instruction = std::find(TWO_BYTE_ARG_INSTRUCTIONS.begin(), TWO_BYTE_ARG_INSTRUCTIONS.end(), instruction) != TWO_BYTE_ARG_INSTRUCTIONS.end();
 
-		if (std::find(TWO_BYTE_ARG_INSTRUCTIONS.begin(), TWO_BYTE_ARG_INSTRUCTIONS.end(), instruction) != TWO_BYTE_ARG_INSTRUCTIONS.end()) {
-			const auto offset = reader->read_u2();
+		if (instruction_name.starts_with("IF") || instruction_name.starts_with("GOTO") || instruction_name.starts_with("JSR")) {
+			bool is_wide = instruction_name.ends_with("_W");
+			u4 offset;
 
-			// TOOD: this is for testing, remove later when implemented for all jump instructions
-			if (instruction == BytecodeInstruction::IFEQ) {
-				const auto absolute_jump_address = current_address + offset;
-				const auto label_index = [label_to_address, absolute_jump_address, &current_label_index] {
-					for (const auto& [label_key, address] : label_to_address) {
-						if (absolute_jump_address == address) {
-							return label_key;
-						}
-					}
-
-					return current_label_index++;
-				}();
-
-				if (!label_to_address.contains(label_index)) {
-					label_to_address[label_index] = absolute_jump_address;
-
-					// will generate names like
-					// 0 -> A
-					// 1 -> B,
-					// 2 -> C
-					// ...
-					// 27 -> AA
-					// 28 -> AB
-					std::string label_name = "";
-					static const std::vector<char> letters{ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
-
-					label_name += letters[label_index % letters.size()];
-
-					for (auto j = 0; j < floor(label_index / letters.size()); j++) {
-						label_name += letters[0];
-					}
-
-					this->m_label_to_name[label_index] = label_name;
-				}
-
-				bytes.push_back((label_index >> 8) & 255);
-				bytes.push_back(label_index & 255);
+			if (is_wide) {
+				offset = reader->read_u4();
 			} else {
-				bytes.push_back((offset >> 8) & 255);
-				bytes.push_back(offset & 255);
+				offset = (u4)reader->read_u2();
 			}
 
-			i += 2;
-		} else if (std::find(ONE_BYTE_ARG_INSTRUCTIONS.begin(), ONE_BYTE_ARG_INSTRUCTIONS.end(), instruction) != ONE_BYTE_ARG_INSTRUCTIONS.end()) {
-			bytes.push_back(reader->read_u1());
-			i += 1;
-		} else {
-			switch (instruction) {
-				case BytecodeInstruction::INVOKEDYNAMIC:
-				case BytecodeInstruction::INVOKEINTERFACE:
-				case BytecodeInstruction::INVOKESPECIAL:
-				case BytecodeInstruction::JSR_W:
-				case BytecodeInstruction::GOTO_W: {
-					for (auto i = 0; i < 4; i++) bytes.push_back(this->read_u1());
-					i += 4;
-					break;
+			const auto absolute_jump_address = current_address + offset;
+
+			const auto label_index = [label_to_address, absolute_jump_address, &current_label_index] {
+				for (const auto& [label_key, address] : label_to_address) {
+					if (absolute_jump_address == address) {
+						return label_key;
+					}
 				}
-				case BytecodeInstruction::MULTIANEWARRAY: {
-					bytes.push_back(reader->read_u1());
-					bytes.push_back(reader->read_u1());
-					bytes.push_back(reader->read_u1());
-					i += 3;
-					break;
+
+				return current_label_index++;
+			}();
+
+			if (!label_to_address.contains(label_index)) {
+				label_to_address[label_index] = absolute_jump_address;
+				this->m_label_to_name[label_index] = this->get_label_name(label_index);
+			}
+
+			if (is_wide) {
+				auto wide_label_index = (u4)label_index;
+
+				bytes.push_back((u1)((wide_label_index >> 24) & 255));
+				bytes.push_back((u1)((wide_label_index >> 16) & 255));
+				bytes.push_back((u1)((wide_label_index >> 8) & 255));
+				bytes.push_back((u1)(wide_label_index & 255));
+
+				i += 4;
+			} else {
+				bytes.push_back((label_index >> 8) & 255);
+				bytes.push_back(label_index & 255);
+				
+				i += 2;
+			}
+		} else {
+			if (std::find(TWO_BYTE_ARG_INSTRUCTIONS.begin(), TWO_BYTE_ARG_INSTRUCTIONS.end(), instruction) != TWO_BYTE_ARG_INSTRUCTIONS.end()) {
+				const auto offset = reader->read_u2();
+
+				bytes.push_back((offset >> 8) & 255);
+				bytes.push_back(offset & 255);
+
+				i += 2;
+			} else if (std::find(ONE_BYTE_ARG_INSTRUCTIONS.begin(), ONE_BYTE_ARG_INSTRUCTIONS.end(), instruction) != ONE_BYTE_ARG_INSTRUCTIONS.end()) {
+				bytes.push_back(reader->read_u1());
+				i += 1;
+			} else {
+				switch (instruction) {
+					case BytecodeInstruction::INVOKEDYNAMIC:
+					case BytecodeInstruction::INVOKEINTERFACE:
+					case BytecodeInstruction::INVOKESPECIAL:
+					case BytecodeInstruction::JSR_W:
+
+					case BytecodeInstruction::MULTIANEWARRAY: {
+						bytes.push_back(reader->read_u1());
+						bytes.push_back(reader->read_u1());
+						bytes.push_back(reader->read_u1());
+						i += 3;
+						break;
+					}
 				}
 			}
 		}
 
 		if (instruction != BytecodeInstruction::LABEL) {
-			current_address += 1 + bytes.size();
+			current_address += 1 + (u4)bytes.size();
 		}
 
 		this->m_instructions.push_back(std::make_pair(instruction, bytes));
@@ -286,10 +318,6 @@ void CodeAttribute::parse_instructions() {
 		if (instruction.first != BytecodeInstruction::LABEL) {
 			current_address += 1 + instruction.second.size();
 		}
-	}
-
-	for (const auto& [k, v] : label_to_address) {
-		std::cout << "label: " << k << " ; address: " << v << "\n";
 	}
 }
 

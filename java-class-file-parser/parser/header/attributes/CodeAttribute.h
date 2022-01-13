@@ -219,7 +219,7 @@ enum class BytecodeInstruction {
     SWAP = 0x5F,
     TABLESWITCH = 0xAA,
     WIDE = 0xC4,
-    LABEL = 0xC8 // 2 bytes for label idx arg
+    LABEL = 0xFF // 2 bytes for label idx arg
 };
 
 // for attributes that can't have nested attributes
@@ -260,7 +260,7 @@ private:
     std::vector<ExceptionTableEntry> m_exception_table;
     std::vector<std::shared_ptr<BasicAttribute>> m_attributes;
 
-    u4 m_current_label_index = 0;
+    std::string get_label_name(u2 idx);
 
     void parse_instructions();
 	std::string get_constant_pool_string_for_code(u2 idx);
