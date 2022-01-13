@@ -219,7 +219,7 @@ enum class BytecodeInstruction {
     SWAP = 0x5F,
     TABLESWITCH = 0xAA,
     WIDE = 0xC4,
-    LABEL = 0xFF // 4 bytes for label idx
+    LABEL = 0xC8 // 2 bytes for label idx arg
 };
 
 // for attributes that can't have nested attributes
@@ -253,12 +253,12 @@ private:
 	u2 m_max_locals;
 
     std::vector<u1> m_code;
+    
     std::vector<std::pair<BytecodeInstruction, std::vector<u1>>> m_instructions;
+    std::unordered_map<u2, std::string> m_label_to_name;
+
     std::vector<ExceptionTableEntry> m_exception_table;
     std::vector<std::shared_ptr<BasicAttribute>> m_attributes;
-
-    std::unordered_map<u4, u2> m_label_to_address;
-    std::unordered_map<u4, std::string> m_label_index_to_string;
 
     u4 m_current_label_index = 0;
 

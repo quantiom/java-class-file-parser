@@ -56,12 +56,13 @@ struct JavaAnnotation : public JavaType {
 	JavaAnnotation(JavaClass* java_class, u2 type_index, std::vector<std::pair<u2, AnnotationElementValue*>> element_value_pairs)
 		: JavaType(java_class), m_type_index(type_index), m_element_value_pairs(element_value_pairs) {};
 
+	const std::string get_name();
+	const auto get_type_index() { return this->m_type_index; }
+	const auto get_element_value_pairs() { return this->m_element_value_pairs; }
+
+private:
 	u2 m_type_index;
 
 	// descriptor index - element value
 	std::vector<std::pair<u2, AnnotationElementValue*>> m_element_value_pairs;
-
-	// utility methods & fields
-
-	std::string get_name();
 };

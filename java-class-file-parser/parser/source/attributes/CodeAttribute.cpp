@@ -108,66 +108,59 @@ std::vector<u1> CodeAttribute::get_bytes() {
 std::vector<std::string> CodeAttribute::get_code_string() {
 	std::vector<std::string> list{};
 
-	auto reader = std::make_unique<ByteReader>(ByteReader(this->m_java_class, this->m_code));
-
-	std::cout << "instructions: " << this->m_instructions.size() << "\n";
-
 	for (int i = 0; i < this->m_code.size(); i++) {
 		std::cout << "0x" << std::hex << (int)this->m_code.at(i) << " ";
 	}
 
 	std::cout << "\n";
 
-	for (int i = 0; i < this->m_code.size(); i++) {
+	for (const auto instruction : this->m_instructions) {
 		std::stringstream ss;
 
-		const auto instruction = (BytecodeInstruction)reader->read_u1();
-		const auto instruction_name = magic_enum::enum_name(instruction);
+		const auto instruction_type = instruction.first;
+		const auto instruction_name = magic_enum::enum_name(instruction_type);
+		const auto instruction_bytes = instruction.second;
 
-		const auto is_two_byte_arg_instruction = std::find(TWO_BYTE_ARG_INSTRUCTIONS.begin(), TWO_BYTE_ARG_INSTRUCTIONS.end(), instruction) != TWO_BYTE_ARG_INSTRUCTIONS.end();
+		const auto reader = std::make_unique<ByteReader>(ByteReader(this->m_java_class, instruction_bytes));
 
-		if (std::find(TWO_BYTE_ARG_INSTRUCTIONS.begin(), TWO_BYTE_ARG_INSTRUCTIONS.end(), instruction) != TWO_BYTE_ARG_INSTRUCTIONS.end()) {
-			// TODO: jumps and labels
-			// I think it would be better to make a different method
-			// that returns a list of (Instruction, std::vector<u1>) and then parse it here.
-			// That way we could add a pseudo-instruction named something like "label"
-			// and insert it farther in the list. It would be much easier to calculate the byte offset.
-
+		if (instruction_bytes.size() == 2) {
 			const auto idx = reader->read_u2();
-			ss << instruction_name << " #" << idx << " // " << get_constant_pool_string_for_code(idx);
-			i += 2;
-		} else if (std::find(ONE_BYTE_ARG_INSTRUCTIONS.begin(), ONE_BYTE_ARG_INSTRUCTIONS.end(), instruction) != ONE_BYTE_ARG_INSTRUCTIONS.end()) {
+			
+			// TODO: implement all other jump instructions
+			if (instruction_type == BytecodeInstruction::IFEQ) {
+				ss << instruction_name << " " << this->m_label_to_name[idx];
+			} else if (instruction_type == BytecodeInstruction::LABEL) {
+				ss << "\nLABEL " << this->m_label_to_name[idx] << ":";
+			} else {
+				ss << instruction_name << " #" << idx << " // " << get_constant_pool_string_for_code(idx);
+			}
+		} else if (instruction_bytes.size() == 1) {
 			const auto idx = reader->read_u1();
 
-			if (instruction == BytecodeInstruction::LDC) {
+			if (instruction_type == BytecodeInstruction::LDC) {
 				ss << instruction_name << " " << this->get_constant_pool_string_for_code((u2)idx);
 			} else {
 				ss << instruction_name << " " << (u4)idx;
 			}
-
-			i += 1;
 		} else {
-			switch (instruction) {
+			switch (instruction.first) {
 				case BytecodeInstruction::INVOKEDYNAMIC:
 				case BytecodeInstruction::INVOKEINTERFACE:
 				case BytecodeInstruction::INVOKESPECIAL: {
 					const auto idx = reader->read_u2();
 					ss << instruction_name << " #" << idx << " // " << get_constant_pool_string_for_code(idx);
-					i += 4;
 					break;
 				}
 				case BytecodeInstruction::JSR_W:
 				case BytecodeInstruction::GOTO_W: {
 					const auto offset = reader->read_u4();
 					ss << instruction_name << " " << offset;
-					i += 4;
 					break;
 				}
 				case BytecodeInstruction::MULTIANEWARRAY: {
 					const auto class_ref = reader->read_u2();
 					const auto dimensions = reader->read_u1();
 					ss << instruction_name << " #" << class_ref << " " << dimensions << " // " << get_constant_pool_string_for_code(class_ref);
-					i += 3;
 					break;
 				}
 				default:
@@ -187,6 +180,11 @@ std::vector<std::string> CodeAttribute::get_code_string() {
 void CodeAttribute::parse_instructions() {
 	auto reader = std::make_unique<ByteReader>(ByteReader(this->m_java_class, this->m_code));
 
+	u4 current_address = 0;
+
+	u2 current_label_index = 0;
+	std::unordered_map<u2, u4> label_to_address;
+	
 	for (int i = 0; i < this->m_code.size(); i++) {
 		std::vector<u1> bytes;
 
@@ -194,8 +192,50 @@ void CodeAttribute::parse_instructions() {
 		const auto is_two_byte_arg_instruction = std::find(TWO_BYTE_ARG_INSTRUCTIONS.begin(), TWO_BYTE_ARG_INSTRUCTIONS.end(), instruction) != TWO_BYTE_ARG_INSTRUCTIONS.end();
 
 		if (std::find(TWO_BYTE_ARG_INSTRUCTIONS.begin(), TWO_BYTE_ARG_INSTRUCTIONS.end(), instruction) != TWO_BYTE_ARG_INSTRUCTIONS.end()) {
-			bytes.push_back(reader->read_u1());
-			bytes.push_back(reader->read_u1());
+			const auto offset = reader->read_u2();
+
+			// TOOD: this is for testing, remove later when implemented for all jump instructions
+			if (instruction == BytecodeInstruction::IFEQ) {
+				const auto absolute_jump_address = current_address + offset;
+				const auto label_index = [label_to_address, absolute_jump_address, &current_label_index] {
+					for (const auto& [label_key, address] : label_to_address) {
+						if (absolute_jump_address == address) {
+							return label_key;
+						}
+					}
+
+					return current_label_index++;
+				}();
+
+				if (!label_to_address.contains(label_index)) {
+					label_to_address[label_index] = absolute_jump_address;
+
+					// will generate names like
+					// 0 -> A
+					// 1 -> B,
+					// 2 -> C
+					// ...
+					// 27 -> AA
+					// 28 -> AB
+					std::string label_name = "";
+					static const std::vector<char> letters{ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
+
+					label_name += letters[label_index % letters.size()];
+
+					for (auto j = 0; j < floor(label_index / letters.size()); j++) {
+						label_name += letters[0];
+					}
+
+					this->m_label_to_name[label_index] = label_name;
+				}
+
+				bytes.push_back((label_index >> 8) & 255);
+				bytes.push_back(label_index & 255);
+			} else {
+				bytes.push_back((offset >> 8) & 255);
+				bytes.push_back(offset & 255);
+			}
+
 			i += 2;
 		} else if (std::find(ONE_BYTE_ARG_INSTRUCTIONS.begin(), ONE_BYTE_ARG_INSTRUCTIONS.end(), instruction) != ONE_BYTE_ARG_INSTRUCTIONS.end()) {
 			bytes.push_back(reader->read_u1());
@@ -221,51 +261,36 @@ void CodeAttribute::parse_instructions() {
 			}
 		}
 
+		if (instruction != BytecodeInstruction::LABEL) {
+			current_address += 1 + bytes.size();
+		}
+
 		this->m_instructions.push_back(std::make_pair(instruction, bytes));
 	}
 
-	auto actual_byte_index = 0;
+	// second pass for adding label pseudo-instructions
+	current_address = 0;
 
-	for (int i = 0; i < this->m_instructions.size(); i++) {
-		const auto instruction = this->m_instructions.at(i);
-		const auto instruction_name = magic_enum::enum_name(instruction.first);
+	for (auto i = 0; i < this->m_instructions.size(); i++) {
+		const auto instruction = this->m_instructions[i];
 
-		actual_byte_index += 1 + instruction.second.size();
-
-		if (instruction_name.starts_with("IF") || instruction_name.starts_with("GOTO")) {
-			int offset;
-
-			if (instruction.second.size() == 4) {
-				offset = (instruction.second[0] << 24) | (instruction.second[1] << 16) | (instruction.second[2] << 8) | instruction.second[3];
-			} else {
-				offset = (instruction.second[0] << 8) | instruction.second[1];
+		for (const auto& [label_key, address] : label_to_address) {
+			if (current_address == address) {
+				const std::vector<u1> label_bytes = { (u1)((label_key >> 8) & 255), (u1)(label_key & 255) };
+				const auto label_instruction = std::make_pair(BytecodeInstruction::LABEL, label_bytes);
+				this->m_instructions.insert(this->m_instructions.begin() + i, label_instruction);
+				i++;
 			}
+		}
 
-			const auto label_index = this->m_current_label_index++;
-			this->m_label_to_address[label_index] = actual_byte_index + offset;
+		if (instruction.first != BytecodeInstruction::LABEL) {
+			current_address += 1 + instruction.second.size();
 		}
 	}
 
-	for (const auto& [k, v] : this->m_label_to_address) {
+	for (const auto& [k, v] : label_to_address) {
 		std::cout << "label: " << k << " ; address: " << v << "\n";
 	}
-
-	// jump A
-	// ...
-	// A:
-	// -> 10 is here ; LDC "AAA"
-
-	// LDC "Frog"
-	// INVOKEDYNAMIC BLABLA
-	// POP
-	// ICONST_0
-	// IFLT 10 // jump 10 bytes
-	// ICONST_1
-	// POP
-	// A: label a
-	// IFLT 20 // jump 20 bytes
-	// ICONST_0
-	// POP
 }
 
 std::string CodeAttribute::get_constant_pool_string_for_code(u2 idx) {
