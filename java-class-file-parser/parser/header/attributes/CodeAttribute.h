@@ -227,7 +227,8 @@ enum class BytecodeInstruction {
 // because CodeAttribute needs to be in it
 using BasicAttribute = std::variant<JavaAttribute>;
 
-struct CodeAttribute : public JavaAttribute {
+class CodeAttribute : public JavaAttribute {
+public:
     // used in the variant
     CodeAttribute() : JavaAttribute() {};
 
@@ -245,7 +246,6 @@ struct CodeAttribute : public JavaAttribute {
     const auto get_exception_table() { return this->m_exception_table; }
     const auto get_attributes() { return this->m_attributes; }
 
-    // these names are horrible, I cannot think of anything else though
 	std::vector<std::string> get_code_string();
 
 private:
@@ -257,11 +257,14 @@ private:
     std::vector<std::pair<BytecodeInstruction, std::vector<u1>>> m_instructions;
     std::unordered_map<u2, std::string> m_label_to_name;
 
+    // TODO: create labels for exception table (EX_START_X, EX_END_X, EX_HANDLER_X)
     std::vector<ExceptionTableEntry> m_exception_table;
     std::vector<std::shared_ptr<BasicAttribute>> m_attributes;
 
     std::string get_label_name(u2 idx);
 
+    // TODO: lookupswitch & tableswitch 
     void parse_instructions();
+
 	std::string get_constant_pool_string_for_code(u2 idx);
 };

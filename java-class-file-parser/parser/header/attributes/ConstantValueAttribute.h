@@ -3,7 +3,8 @@
 
 // https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.2
 
-struct ConstantValueAttribute : public JavaAttribute {
+class ConstantValueAttribute : public JavaAttribute {
+public:
 	// used in the variant
 	ConstantValueAttribute() : JavaAttribute() {};
 

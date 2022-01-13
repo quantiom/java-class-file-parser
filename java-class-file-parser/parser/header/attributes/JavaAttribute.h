@@ -7,7 +7,8 @@
 
 // https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7
 
-struct JavaAttribute : public ByteReader {
+class JavaAttribute : public ByteReader {
+public:
 	// used in the variant
 	JavaAttribute() : ByteReader(nullptr, {}) {};
 	

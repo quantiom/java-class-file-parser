@@ -206,7 +206,6 @@ std::string CodeAttribute::get_label_name(u2 idx) {
 	return str;
 }
 
-// TODO: lookupswitch & tableswitch 
 void CodeAttribute::parse_instructions() {
 	auto reader = std::make_unique<ByteReader>(ByteReader(this->m_java_class, this->m_code));
 
