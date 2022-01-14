@@ -315,7 +315,7 @@ void CodeAttribute::parse_instructions() {
 
 		if (!label_to_address.contains(start_label_index)) {
 			label_to_address[start_label_index] = entry.m_start_pc;
-			this->m_label_to_name[start_label_index] = std::string("EX_START_" + std::to_string(i + 1));
+			this->m_label_to_name[start_label_index] = ("EX_START_" + std::to_string(i + 1));
 		}
 
 		if (entry.m_end_pc != entry.m_handler_pc) {
@@ -323,7 +323,7 @@ void CodeAttribute::parse_instructions() {
 
 			if (!label_to_address.contains(end_label_index)) {
 				label_to_address[end_label_index] = entry.m_end_pc;
-				this->m_label_to_name[end_label_index] = std::string("EX_END_" + std::to_string(i + 1));
+				this->m_label_to_name[end_label_index] = ("EX_END_" + std::to_string(i + 1));
 			}
 		}
 
