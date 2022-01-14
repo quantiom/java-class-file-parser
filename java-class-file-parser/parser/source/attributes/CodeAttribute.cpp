@@ -187,7 +187,7 @@ std::string CodeAttribute::get_label_name(u2 idx) {
 	static const std::vector<char> letters{ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
 
 	std::string str;
-	int alphabetLength = letters.size();
+	int alphabetLength = (int)letters.size();
 	int m = 8;
 	char* chars = new char[m];
 	int n = m - 1;
@@ -216,6 +216,7 @@ void CodeAttribute::parse_instructions() {
 	u2 current_label_index = 0;
 	std::unordered_map<u2, u4> label_to_address;
 
+	// TODO: fix this returning duplicates
 	const auto get_label_index = [label_to_address, &current_label_index](const u4& find_address) {
 		for (const auto& [label_key, address] : label_to_address) {
 			if (find_address == address) {
@@ -351,7 +352,11 @@ void CodeAttribute::parse_instructions() {
 		}
 
 		if (instruction.first != BytecodeInstruction::LABEL) {
-			current_address += 1 + instruction.second.size();
+			current_address += 1 + (u4)instruction.second.size();
+		}
+
+		for (const auto& [label_index, address] : label_to_address) {
+			std::cout << "label: " << label_index << " ; " << address << "\n";
 		}
 	}
 }
