@@ -216,6 +216,16 @@ void CodeAttribute::parse_instructions() {
 	u2 current_label_index = 0;
 	std::unordered_map<u2, u4> label_to_address;
 
+	const auto get_label_index = [label_to_address, &current_label_index](const u4& find_address) {
+		for (const auto& [label_key, address] : label_to_address) {
+			if (find_address == address) {
+				return label_key;
+			}
+		}
+
+		return current_label_index++;
+	};
+
 	for (int i = 0; i < this->m_code.size(); i++) {
 		std::vector<u1> bytes;
 
@@ -235,15 +245,7 @@ void CodeAttribute::parse_instructions() {
 
 			const auto absolute_jump_address = current_address + offset;
 
-			const auto label_index = [label_to_address, absolute_jump_address, &current_label_index] {
-				for (const auto& [label_key, address] : label_to_address) {
-					if (absolute_jump_address == address) {
-						return label_key;
-					}
-				}
-
-				return current_label_index++;
-			}();
+			const auto label_index = get_label_index(absolute_jump_address);
 
 			if (!label_to_address.contains(label_index)) {
 				label_to_address[label_index] = absolute_jump_address;
@@ -275,6 +277,7 @@ void CodeAttribute::parse_instructions() {
 				i += 2;
 			} else if (std::find(ONE_BYTE_ARG_INSTRUCTIONS.begin(), ONE_BYTE_ARG_INSTRUCTIONS.end(), instruction) != ONE_BYTE_ARG_INSTRUCTIONS.end()) {
 				bytes.push_back(reader->read_u1());
+
 				i += 1;
 			} else {
 				switch (instruction) {
@@ -285,6 +288,7 @@ void CodeAttribute::parse_instructions() {
 						bytes.push_back(reader->read_u1());
 						bytes.push_back(reader->read_u1());
 						bytes.push_back(reader->read_u1());
+
 						i += 3;
 						break;
 					}
@@ -297,6 +301,38 @@ void CodeAttribute::parse_instructions() {
 		}
 
 		this->m_instructions.push_back(std::make_pair(instruction, bytes));
+	}
+
+	// add exception labels
+	// idx starts at 1
+	// EX_START_IDX
+	// EX_END_IDX
+	// EX_HANDLER_IDX
+	for (int i = 0; i < this->m_exception_table.size(); i++) {
+		const auto entry = this->m_exception_table.at(i);
+		
+		const auto start_label_index = get_label_index(entry.m_start_pc);
+
+		if (!label_to_address.contains(start_label_index)) {
+			label_to_address[start_label_index] = entry.m_start_pc;
+			this->m_label_to_name[start_label_index] = std::string("EX_START_" + std::to_string(i + 1));
+		}
+
+		if (entry.m_end_pc != entry.m_handler_pc) {
+			const auto end_label_index = get_label_index(entry.m_end_pc);
+
+			if (!label_to_address.contains(end_label_index)) {
+				label_to_address[end_label_index] = entry.m_end_pc;
+				this->m_label_to_name[end_label_index] = std::string("EX_END_" + std::to_string(i + 1));
+			}
+		}
+
+		const auto handler_label_index = get_label_index(entry.m_handler_pc);
+
+		if (!label_to_address.contains(handler_label_index)) {
+			label_to_address[handler_label_index] = entry.m_handler_pc;
+			this->m_label_to_name[handler_label_index] = ("EX_HANDLER_" + std::to_string(i + 1));
+		}
 	}
 
 	// second pass for adding label pseudo-instructions
