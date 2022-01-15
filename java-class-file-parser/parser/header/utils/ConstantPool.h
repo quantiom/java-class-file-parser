@@ -6,6 +6,8 @@
 
 #include <unordered_map>
 
+class JavaClass;
+
 // https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.4
 
 enum class ConstantPoolType {
@@ -37,7 +39,9 @@ struct ConstantPoolReference {
 
 class ConstantPool {
 public:
-	void add_constant(ConstantPoolEntryInfo entry);
+	void parse(JavaClass* java_class);
+
+	void add_entry(ConstantPoolEntryInfo entry);
 
 	std::optional<ConstantPoolEntryInfo> get_entry(size_t idx);
 

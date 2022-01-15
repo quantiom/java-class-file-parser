@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <optional>
+#include <memory>
 
 #include "../defines.h"
 #include "../utils/AttributeReader.h"
@@ -28,18 +29,16 @@ enum class AccessFlags {
 
 class JavaClass : public AttributeReader, public AttributeHolder {
 public:
-	JavaClass(std::vector<u1> bytes) : AttributeReader(this, bytes), AttributeHolder(this) {
-		this->m_constant_pool = ConstantPool();
-	};
+	JavaClass(std::vector<u1> bytes) : AttributeReader(this, bytes), AttributeHolder(this) {};
 
 	// parses the class file
 	JavaClass* parse();
 
-	// get the bytes of the class file (including modifications made)
+	// get the new bytes of the class file
 	std::vector<u1> get_bytes();
 
 	// getters
-	ConstantPool get_constant_pool();
+	std::shared_ptr<ConstantPool> get_constant_pool();
 	const std::vector<JavaField*> get_fields();
 	const std::vector<JavaMethod*> get_methods();
 
@@ -63,7 +62,7 @@ private:
 	u2 m_major_version;
 
 	// constant pool wrapper
-	ConstantPool m_constant_pool;
+	std::shared_ptr<ConstantPool> m_constant_pool;
 
 	// access flags for the class (AccessFlags)
 	u2 m_access_flags;
@@ -74,6 +73,8 @@ private:
 
 	// index of all interfaces this classes implements in the constant pool (to CONSTANT_Class-es)
 	std::vector<u2> m_interfaces;
+
+	// TODO: convert to smart ptrs
 
 	// fields
 	std::vector<JavaField*> m_fields;

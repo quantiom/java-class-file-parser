@@ -11,7 +11,7 @@ std::shared_ptr<ParsedAttribute> AttributeReader::read_attribute() {
 		attribute_info.push_back(this->read_u1());
 	}
 
-	const auto name = this->m_java_class->get_constant_pool().get_string(attribute_name_index);
+	const auto name = this->m_java_class->get_constant_pool()->get_string(attribute_name_index);
 
 	std::shared_ptr<ParsedAttribute> attribute;
 

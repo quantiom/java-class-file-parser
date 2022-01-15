@@ -358,31 +358,31 @@ void CodeAttribute::parse_instructions() {
 
 std::string CodeAttribute::get_constant_pool_string_for_code(u2 idx) {
 	auto constant_pool = this->m_java_class->get_constant_pool();
-	const auto entry = constant_pool.get_entry(idx);
+	const auto entry = constant_pool->get_entry(idx);
 	const auto type = (ConstantPoolType)entry->m_tag;
 
 	switch (type) {
 		case ConstantPoolType::CONSTANT_String:
 		case ConstantPoolType::CONSTANT_Utf8:
-			return "\"" + constant_pool.get_string(idx) + "\"";
+			return "\"" + constant_pool->get_string(idx) + "\"";
 		case ConstantPoolType::CONSTANT_Fieldref: {
-			const auto name_and_type = constant_pool.get_name_and_type((entry->m_info[2] << 8) | entry->m_info[3]);
-			return constant_pool.get_string((entry->m_info[0] << 8) | entry->m_info[1]) + "." + name_and_type.first + " " + name_and_type.second;
+			const auto name_and_type = constant_pool->get_name_and_type((entry->m_info[2] << 8) | entry->m_info[3]);
+			return constant_pool->get_string((entry->m_info[0] << 8) | entry->m_info[1]) + "." + name_and_type.first + " " + name_and_type.second;
 		}
 		case ConstantPoolType::CONSTANT_InterfaceMethodref:
 		case ConstantPoolType::CONSTANT_Methodref: {
-			const auto name_and_type = constant_pool.get_name_and_type((entry->m_info[2] << 8) | entry->m_info[3]);
-			return constant_pool.get_string((entry->m_info[0] << 8) | entry->m_info[1]) + "." + name_and_type.first + name_and_type.second;
+			const auto name_and_type = constant_pool->get_name_and_type((entry->m_info[2] << 8) | entry->m_info[3]);
+			return constant_pool->get_string((entry->m_info[0] << 8) | entry->m_info[1]) + "." + name_and_type.first + name_and_type.second;
 		}
 		case ConstantPoolType::CONSTANT_Integer:
-			return std::to_string(constant_pool.get_integer(idx));
+			return std::to_string(constant_pool->get_integer(idx));
 		case ConstantPoolType::CONSTANT_Float:
-			return std::to_string(constant_pool.get_float(idx)) + "F";
+			return std::to_string(constant_pool->get_float(idx)) + "F";
 		case ConstantPoolType::CONSTANT_Double:
-			return std::to_string(constant_pool.get_double(idx)) + "D";
+			return std::to_string(constant_pool->get_double(idx)) + "D";
 		case ConstantPoolType::CONSTANT_Long:
-			return std::to_string(constant_pool.get_long(idx)) + "L";
+			return std::to_string(constant_pool->get_long(idx)) + "L";
 		default:
-			return constant_pool.get_string(idx);
+			return constant_pool->get_string(idx);
 	}
 }
