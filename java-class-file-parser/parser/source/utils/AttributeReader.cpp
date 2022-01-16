@@ -17,23 +17,25 @@ std::shared_ptr<ParsedAttribute> AttributeReader::read_attribute() {
 
 	switch (hash::Fnv1a<uint32_t>(name)) {
 		case hash::Fnv1a<uint32_t>("Code"):
-			attribute = std::make_shared<ParsedAttribute>(CodeAttribute(this->m_java_class, attribute_name_index, attribute_info));
+			attribute = std::make_shared<ParsedAttribute>(CodeAttribute(this->m_java_class, attribute_name_index));
 			break;
 		case hash::Fnv1a<uint32_t>("Deprecated"):
-			attribute = std::make_shared<ParsedAttribute>(DeprecatedAttribute(this->m_java_class, attribute_name_index, attribute_info));
+			attribute = std::make_shared<ParsedAttribute>(DeprecatedAttribute(this->m_java_class, attribute_name_index));
 			break;
 		case hash::Fnv1a<uint32_t>("RuntimeInvisibleAnnotations"):
-			attribute = std::make_shared<ParsedAttribute>(RuntimeInvisibleAnnotationsAttribute(this->m_java_class, attribute_name_index, attribute_info));
+			attribute = std::make_shared<ParsedAttribute>(RuntimeInvisibleAnnotationsAttribute(this->m_java_class, attribute_name_index));
 			break;
 		case hash::Fnv1a<uint32_t>("RuntimeVisibleAnnotations"):
-			attribute = std::make_shared<ParsedAttribute>(RuntimeVisibleAnnotationsAttribute(this->m_java_class, attribute_name_index, attribute_info));
+			attribute = std::make_shared<ParsedAttribute>(RuntimeVisibleAnnotationsAttribute(this->m_java_class, attribute_name_index));
 			break;
 		default:
-			attribute = std::make_shared<ParsedAttribute>(JavaAttribute(this->m_java_class, attribute_name_index, attribute_info));
+			attribute = std::make_shared<ParsedAttribute>(UnparsedJavaAttribute(this->m_java_class, attribute_name_index));
 	}
 
+	auto reader = std::make_unique<ByteReader>(ByteReader(this->m_java_class, attribute_info));
+
 	// parse the attribute with the class's parse() method
-	std::visit([](auto& a) { a.parse(); }, *attribute);
+	std::visit([&reader](auto& a) { a.parse(reader); }, *attribute);
 
 	return attribute;
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "JavaAttribute.h"
+#include "UnparsedJavaAttribute.h"
 
 #include <unordered_map>
 
@@ -222,27 +223,22 @@ enum class BytecodeInstruction {
     LABEL = 0xFF // 2 bytes for label idx arg
 };
 
-// for attributes that can't have nested attributes
+// for attributes that can't have nested attributes,
 // this is needed, since ParsedAttribute can't be used
 // because CodeAttribute needs to be in it
-using BasicAttribute = std::variant<JavaAttribute>;
+using BasicAttribute = std::variant<UnparsedJavaAttribute>;
 
 class CodeAttribute : public JavaAttribute {
 public:
-    // used in the variant
     CodeAttribute() : JavaAttribute() {};
-
 	CodeAttribute(JavaClass* java_class, std::shared_ptr<JavaAttribute> attribute) : JavaAttribute(java_class, attribute) {};
+    CodeAttribute(JavaClass* java_class, u2 name_index) : JavaAttribute(java_class, name_index) {};
 
-    CodeAttribute(JavaClass* java_class, u2 name_index, std::vector<u1> info)
-        : JavaAttribute(java_class, name_index, info) {};
-
-	void parse();
+    void parse(std::unique_ptr<ByteReader>& reader);
 	std::vector<u1> get_bytes();
 
     const auto get_max_stack() { return this->m_max_stack; }
     const auto get_max_locals() { return this->m_max_locals; }
-    const auto get_code() { return this->m_code; };
     const auto get_exception_table() { return this->m_exception_table; }
     const auto get_attributes() { return this->m_attributes; }
 
@@ -251,20 +247,20 @@ public:
 private:
 	u2 m_max_stack;
 	u2 m_max_locals;
-
-    std::vector<u1> m_code;
     
     std::vector<std::pair<BytecodeInstruction, std::vector<u1>>> m_instructions;
-    std::unordered_map<u2, std::string> m_label_to_name;
 
-    // TODO: create labels for exception table (EX_START_X, EX_END_X, EX_HANDLER_X)
+    std::unordered_map<u2, std::string> m_label_to_name;
+    std::unordered_map<u2, u4> m_label_to_address;
+    u2 m_current_label_index = 0;
+
     std::vector<ExceptionTableEntry> m_exception_table;
     std::vector<std::shared_ptr<BasicAttribute>> m_attributes;
 
     std::string get_label_name(u2 idx);
 
     // TODO: lookupswitch & tableswitch 
-    void parse_instructions();
+    void parse_instructions(std::vector<u1> code);
 
 	std::string get_constant_pool_string_for_code(u2 idx);
 };

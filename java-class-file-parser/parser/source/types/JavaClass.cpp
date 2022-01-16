@@ -87,7 +87,7 @@ std::vector<u1> JavaClass::get_bytes() {
 	writer->write_attributes(this->m_attributes);
 
 	// return the written bytes
-	return writer->m_bytes;
+	return writer->get_bytes();
 }
 
 std::shared_ptr<ConstantPool> JavaClass::get_constant_pool() {
@@ -142,7 +142,7 @@ void JavaClass::parse_fields() {
 			attributes.push_back(this->read_attribute());
 		}
 
-		this->m_fields.push_back(std::make_shared<JavaField>(new JavaField(this, access_flags, name_index, descriptor_index, attributes)));
+		this->m_fields.push_back(std::make_shared<JavaField>(this, access_flags, name_index, descriptor_index, attributes));
 	}
 }
 
@@ -162,7 +162,7 @@ void JavaClass::parse_methods() {
 			attributes.push_back(this->read_attribute());
 		}
 
-		this->m_methods.push_back(new JavaMethod(this, access_flags, name_index, descriptor_index, attributes));
+		this->m_methods.push_back(std::make_shared<JavaMethod>(this, access_flags, name_index, descriptor_index, attributes));
 	}
 }
 

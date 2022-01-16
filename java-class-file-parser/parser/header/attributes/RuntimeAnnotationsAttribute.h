@@ -8,16 +8,11 @@
 
 class RuntimeAnnotationsAttribute : public AnnotationAttribute {
 public:
-	// used in the variant
 	RuntimeAnnotationsAttribute() : AnnotationAttribute() {};
+	RuntimeAnnotationsAttribute(JavaClass* java_class, std::shared_ptr<JavaAttribute> attribute) : AnnotationAttribute(java_class, attribute) {};
+	RuntimeAnnotationsAttribute(JavaClass* java_class, u2 name_index) : AnnotationAttribute(java_class, name_index) {};
 
-	RuntimeAnnotationsAttribute(JavaClass* java_class, std::shared_ptr<JavaAttribute> attribute) 
-		: AnnotationAttribute(java_class, attribute) {};
-
-	RuntimeAnnotationsAttribute(JavaClass* java_class, u2 name_index, std::vector<u1> info)
-		: AnnotationAttribute(java_class, name_index, info) {};
-
-	void parse();
+	void parse(std::unique_ptr<ByteReader>& bytes);
 	std::vector<u1> get_bytes();
 
 	const auto is_visible() { return this->m_is_visible; }
@@ -30,24 +25,16 @@ private:
 	std::vector<std::shared_ptr<JavaAnnotation>> m_annotations;
 };
 
-struct RuntimeVisibleAnnotationsAttribute : public RuntimeAnnotationsAttribute {
-	// used in the variant
+class RuntimeVisibleAnnotationsAttribute : public RuntimeAnnotationsAttribute {
+public:
 	RuntimeVisibleAnnotationsAttribute() : RuntimeAnnotationsAttribute() {};
-
-	RuntimeVisibleAnnotationsAttribute(JavaClass* java_class, std::shared_ptr<JavaAttribute> attribute) 
-		: RuntimeAnnotationsAttribute(java_class, attribute) {};
-
-	RuntimeVisibleAnnotationsAttribute(JavaClass* java_class, u2 name_index, std::vector<u1> info)
-		: RuntimeAnnotationsAttribute(java_class, name_index, info) {};
+	RuntimeVisibleAnnotationsAttribute(JavaClass* java_class, std::shared_ptr<JavaAttribute> attribute) : RuntimeAnnotationsAttribute(java_class, attribute) {};
+	RuntimeVisibleAnnotationsAttribute(JavaClass* java_class, u2 name_index) : RuntimeAnnotationsAttribute(java_class, name_index) {};
 };
 
-struct RuntimeInvisibleAnnotationsAttribute : public RuntimeAnnotationsAttribute {
-	// used in the variant
+class RuntimeInvisibleAnnotationsAttribute: public RuntimeAnnotationsAttribute{
+public:
 	RuntimeInvisibleAnnotationsAttribute() : RuntimeAnnotationsAttribute() {};
-
-	RuntimeInvisibleAnnotationsAttribute(JavaClass* java_class, std::shared_ptr<JavaAttribute> attribute)
-		: RuntimeAnnotationsAttribute(java_class, attribute) {};
-
-	RuntimeInvisibleAnnotationsAttribute(JavaClass* java_class, u2 name_index, std::vector<u1> info)
-		: RuntimeAnnotationsAttribute(java_class, name_index, info) {};
+	RuntimeInvisibleAnnotationsAttribute(JavaClass* java_class, std::shared_ptr<JavaAttribute> attribute) : RuntimeAnnotationsAttribute(java_class, attribute) {};
+	RuntimeInvisibleAnnotationsAttribute(JavaClass* java_class, u2 name_index) : RuntimeAnnotationsAttribute(java_class, name_index) {};
 };

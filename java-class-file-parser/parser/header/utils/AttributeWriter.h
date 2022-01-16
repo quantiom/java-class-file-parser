@@ -10,14 +10,20 @@ public:
 		// TODO: make attributes only store their parsed data so it doesn't use
 		// double the memory
 		for (const auto& attribute_ptr : attributes) {
-			std::visit([this](auto& attribute) {
-				this->write_u2(attribute.get_name_index());
-				this->write_u4((u4)attribute.get_info().size());
-
-				for (const auto& byte : attribute.get_info()) {
-					this->write_u1(byte);
-				}
-			}, *attribute_ptr);
+			this->write_attribute(attribute_ptr);
 		}
+	}
+
+	void write_attribute(std::shared_ptr<ParsedAttribute> attribute_ptr) {
+		std::visit([this](auto& attribute) {
+			auto bytes = attribute.get_bytes();
+
+			this->write_u2(attribute.get_name_index());
+			this->write_u4((u4)bytes.size());
+
+			for (const auto& byte : bytes) {
+				this->write_u1(byte);
+			}
+		}, *attribute_ptr);
 	}
 };

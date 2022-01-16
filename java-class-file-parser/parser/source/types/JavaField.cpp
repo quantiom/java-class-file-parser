@@ -26,7 +26,7 @@ void JavaField::set_deprecated(bool new_value) {
 
 	if (new_value) {
 		this->add_annotation(std::make_shared<JavaAnnotation>(JavaAnnotation(this->m_java_class, this->m_java_class->get_constant_pool()->get_or_add_utf8("Ljava/lang/Deprecated;"), {})), true);
-		this->m_attributes.push_back(std::make_shared<ParsedAttribute>(JavaAttribute(this->m_java_class, this->m_java_class->get_constant_pool()->get_or_add_utf8("Deprecated"), {})));
+		this->m_attributes.push_back(std::make_shared<ParsedAttribute>(DeprecatedAttribute(this->m_java_class, this->m_java_class->get_constant_pool()->get_or_add_utf8("Deprecated"))));
 	} else {
 		this->remove_attribute<DeprecatedAttribute>();
 		this->remove_annotation("Ljava/lang/Deprecated;", true);
@@ -62,7 +62,7 @@ const void JavaField::add_annotation(std::shared_ptr<JavaAnnotation> annotation,
 		auto found_attribute = this->get_attribute<RuntimeVisibleAnnotationsAttribute>();
 
 		if (!found_attribute) {
-			found_attribute = std::make_shared<ParsedAttribute>(RuntimeVisibleAnnotationsAttribute(this->m_java_class, this->m_java_class->get_constant_pool()->get_or_add_utf8("RuntimeVisibleAnnotations"), {}));
+			found_attribute = std::make_shared<ParsedAttribute>(RuntimeVisibleAnnotationsAttribute(this->m_java_class, this->m_java_class->get_constant_pool()->get_or_add_utf8("RuntimeVisibleAnnotations")));
 		}
 
 		attribute = found_attribute.value();
@@ -73,7 +73,7 @@ const void JavaField::add_annotation(std::shared_ptr<JavaAnnotation> annotation,
 		auto found_attribute = this->get_attribute<RuntimeInvisibleAnnotationsAttribute>();
 
 		if (found_attribute == nullptr) {
-			found_attribute = std::make_shared<ParsedAttribute>(RuntimeInvisibleAnnotationsAttribute(this->m_java_class, this->m_java_class->get_constant_pool()->get_or_add_utf8("RuntimeVisibleAnnotations"), {}));
+			found_attribute = std::make_shared<ParsedAttribute>(RuntimeInvisibleAnnotationsAttribute(this->m_java_class, this->m_java_class->get_constant_pool()->get_or_add_utf8("RuntimeVisibleAnnotations")));
 		}
 
 		attribute = found_attribute.value();

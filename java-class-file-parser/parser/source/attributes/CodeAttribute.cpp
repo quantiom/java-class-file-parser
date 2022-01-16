@@ -59,62 +59,142 @@ namespace {
 	};
 } // namespace
 
-void CodeAttribute::parse() {
-	this->m_max_stack = this->read_u2();
-	this->m_max_locals = this->read_u2();
+void CodeAttribute::parse(std::unique_ptr<ByteReader>& reader) {
+	this->m_max_stack = reader->read_u2();
+	this->m_max_locals = reader->read_u2();
 
-	const auto code_length = this->read_u4();
+	const auto code_length = reader->read_u4();
+	std::vector<u1> code{};
 
 	for (size_t i = 0; i < code_length; i++) {
-		this->m_code.push_back(this->read_u1());
+		code.push_back(reader->read_u1());
 	}
 
-	const auto exception_table_length = this->read_u2();
+	const auto exception_table_length = reader->read_u2();
 
 	for (auto i = 0; i < exception_table_length; i++) {
-		const auto start_pc = this->read_u2();
-		const auto end_pc = this->read_u2();
-		const auto handler_pc = this->read_u2();
-		const auto catch_type = this->read_u2();
+		const auto start_pc = reader->read_u2();
+		const auto end_pc = reader->read_u2();
+		const auto handler_pc = reader->read_u2();
+		const auto catch_type = reader->read_u2();
 
 		this->m_exception_table.push_back(ExceptionTableEntry{ start_pc, end_pc, handler_pc, catch_type });
 	}
 
-	const auto attributes_count = this->read_u2();
+	const auto attributes_count = reader->read_u2();
 
 	// no parsing (for now)
 	for (auto i = 0; i < attributes_count; i++) {
-		const auto attribute_name_index = this->read_u2();
-		const auto attribute_length = this->read_u4();
+		const auto attribute_name_index = reader->read_u2();
+		const auto attribute_length = reader->read_u4();
 
 		std::vector<u1> attribute_info;
 
 		for (size_t k = 0; k < attribute_length; k++) {
-			attribute_info.push_back(this->read_u1());
+			attribute_info.push_back(reader->read_u1());
 		}
 
-		const auto attribute = std::make_shared<BasicAttribute>(JavaAttribute(this->m_java_class, attribute_name_index, attribute_info));
+		auto annotation_reader = std::make_unique<ByteReader>(this->m_java_class, attribute_info);
+
+		const auto attribute = std::make_shared<BasicAttribute>(UnparsedJavaAttribute(this->m_java_class, attribute_name_index));
+		std::get<UnparsedJavaAttribute>(*attribute).parse(annotation_reader);
 
 		this->m_attributes.push_back(attribute);
 	}
 
-	this->parse_instructions();
+	this->parse_instructions(code);
 }
 
 std::vector<u1> CodeAttribute::get_bytes() {
-	return this->get_info();
+	const auto writer = std::make_unique<ByteWriter>();
+
+	writer->write_u2(this->m_max_stack);
+	writer->write_u2(this->m_max_locals);
+
+	std::vector<u1> code{};
+	u4 current_address = 0;
+
+	for (const auto& [instruction, bytes] : this->m_instructions) {
+		if (instruction != BytecodeInstruction::LABEL) {
+			const auto instruction_name = magic_enum::enum_name(instruction);
+
+			code.push_back((u1)instruction);
+
+			if (instruction_name.starts_with("IF") || instruction_name.starts_with("GOTO") || instruction_name.starts_with("JSR")) {
+				u2 label_idx;
+				bool is_wide = instruction_name.ends_with("_W");
+
+				if (is_wide) {
+					label_idx = (u2)((bytes[0] << 24) | (bytes[1] << 16) | (bytes[2] << 8) | bytes[3]);
+				} else {
+					label_idx = (u2)((bytes[0] << 8) | bytes[1]);
+				}
+
+				const s4 jump_offset = this->m_label_to_address[label_idx] - current_address;
+
+				if (is_wide) {
+					code.push_back((u1)((jump_offset >> 24) & 255));
+					code.push_back((u1)((jump_offset >> 16) & 255));
+					code.push_back((u1)((jump_offset >> 8) & 255));
+					code.push_back((u1)(jump_offset & 255));
+
+					current_address += 4;
+				} else {
+					code.push_back((u1)((jump_offset >> 8) & 255));
+					code.push_back((u1)(jump_offset & 255));
+
+					current_address += 2;
+				}
+			} else {
+				for (const auto& byte : bytes) {
+					code.push_back(byte);
+					current_address++;
+				}
+			}
+		
+			current_address++;
+		}
+	}
+
+	writer->write_u4((u4)code.size());
+	
+	for (const auto& byte : code) {
+		writer->write_u1(byte);
+	}
+
+	writer->write_u2((u2)this->m_exception_table.size());
+
+	for (const auto& entry : this->m_exception_table) {
+		writer->write_u2(entry.m_start_pc);
+		writer->write_u2(entry.m_end_pc);
+		writer->write_u2(entry.m_handler_pc);
+		writer->write_u2(entry.m_catch_type);
+	}
+
+	writer->write_u2((u2)this->m_attributes.size());
+
+	for (const auto& attribute_ptr : this->m_attributes) {
+		std::visit([this, &writer](auto& attribute) {
+			auto bytes = attribute.get_bytes();
+
+			writer->write_u2(attribute.get_name_index());
+			writer->write_u4((u4)bytes.size());
+
+			for (const auto& byte : bytes) {
+				writer->write_u1(byte);
+			}
+		}, *attribute_ptr);
+	}
+
+	return writer->get_bytes();
 }
 
 std::vector<std::string> CodeAttribute::get_code_string() {
 	std::vector<std::string> list{};
 
-	for (const auto instruction : this->m_instructions) {
+	for (const auto [instruction_type, instruction_bytes] : this->m_instructions) {
 		std::stringstream ss;
-
-		const auto instruction_type = instruction.first;
 		const auto instruction_name = magic_enum::enum_name(instruction_type);
-		const auto instruction_bytes = instruction.second;
-
 		const auto reader = std::make_unique<ByteReader>(ByteReader(this->m_java_class, instruction_bytes));
 
 		if (instruction_name.starts_with("IF") || instruction_name.starts_with("GOTO") || instruction_name.starts_with("JSR")) {
@@ -147,7 +227,7 @@ std::vector<std::string> CodeAttribute::get_code_string() {
 					ss << instruction_name << " " << (u4)idx;
 				}
 			} else {
-				switch (instruction.first) {
+				switch (instruction_type) {
 					case BytecodeInstruction::INVOKEDYNAMIC:
 					case BytecodeInstruction::INVOKEINTERFACE:
 					case BytecodeInstruction::INVOKESPECIAL: {
@@ -208,25 +288,22 @@ std::string CodeAttribute::get_label_name(u2 idx) {
 	return str;
 }
 
-void CodeAttribute::parse_instructions() {
-	auto reader = std::make_unique<ByteReader>(ByteReader(this->m_java_class, this->m_code));
+void CodeAttribute::parse_instructions(std::vector<u1> code) {
+	auto reader = std::make_unique<ByteReader>(ByteReader(this->m_java_class, code));
 
 	u4 current_address = 0;
 
-	u2 current_label_index = 0;
-	std::unordered_map<u2, u4> label_to_address;
-
-	const auto get_label_index = [&label_to_address, &current_label_index](const u4& find_address) {
-		for (const auto& [label_key, address] : label_to_address) {
+	const auto get_label_index = [this](const u4& find_address) {
+		for (const auto& [label_key, address] : this->m_label_to_address) {
 			if (find_address == address) {
 				return label_key;
 			}
 		}
 
-		return current_label_index++;
+		return this->m_current_label_index++;
 	};
 
-	for (int i = 0; i < this->m_code.size(); i++) {
+	for (int i = 0; i < code.size(); i++) {
 		std::vector<u1> bytes;
 
 		const auto instruction = (BytecodeInstruction)reader->read_u1();
@@ -247,8 +324,8 @@ void CodeAttribute::parse_instructions() {
 
 			const auto label_index = get_label_index(absolute_jump_address);
 
-			if (!label_to_address.contains(label_index)) {
-				label_to_address[label_index] = absolute_jump_address;
+			if (!this->m_label_to_address.contains(label_index)) {
+				this->m_label_to_address[label_index] = absolute_jump_address;
 				this->m_label_to_name[label_index] = this->get_label_name(label_index);
 			}
 
@@ -313,24 +390,24 @@ void CodeAttribute::parse_instructions() {
 		
 		const auto start_label_index = get_label_index(entry.m_start_pc);
 
-		if (!label_to_address.contains(start_label_index)) {
-			label_to_address[start_label_index] = entry.m_start_pc;
+		if (!this->m_label_to_address.contains(start_label_index)) {
+			this->m_label_to_address[start_label_index] = entry.m_start_pc;
 			this->m_label_to_name[start_label_index] = ("EX_START_" + std::to_string(i + 1));
 		}
 
 		if (entry.m_end_pc != entry.m_handler_pc) {
 			const auto end_label_index = get_label_index(entry.m_end_pc);
 
-			if (!label_to_address.contains(end_label_index)) {
-				label_to_address[end_label_index] = entry.m_end_pc;
+			if (!this->m_label_to_address.contains(end_label_index)) {
+				this->m_label_to_address[end_label_index] = entry.m_end_pc;
 				this->m_label_to_name[end_label_index] = ("EX_END_" + std::to_string(i + 1));
 			}
 		}
 
 		const auto handler_label_index = get_label_index(entry.m_handler_pc);
 
-		if (!label_to_address.contains(handler_label_index)) {
-			label_to_address[handler_label_index] = entry.m_handler_pc;
+		if (!this->m_label_to_address.contains(handler_label_index)) {
+			this->m_label_to_address[handler_label_index] = entry.m_handler_pc;
 			this->m_label_to_name[handler_label_index] = ("EX_HANDLER_" + std::to_string(i + 1));
 		}
 	}
@@ -341,7 +418,7 @@ void CodeAttribute::parse_instructions() {
 	for (auto i = 0; i < this->m_instructions.size(); i++) {
 		const auto instruction = this->m_instructions[i];
 
-		for (const auto& [label_key, address] : label_to_address) {
+		for (const auto& [label_key, address] : this->m_label_to_address) {
 			if (current_address == address) {
 				const std::vector<u1> label_bytes = { (u1)((label_key >> 8) & 255), (u1)(label_key & 255) };
 				const auto label_instruction = std::make_pair(BytecodeInstruction::LABEL, label_bytes);

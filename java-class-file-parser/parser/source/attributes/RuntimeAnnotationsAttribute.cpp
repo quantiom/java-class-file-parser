@@ -3,13 +3,13 @@
 #include "../../header/types/JavaAnnotation.h"
 #include "../../header/utils/ByteWriter.h"
 
-void RuntimeAnnotationsAttribute::parse() {
+void RuntimeAnnotationsAttribute::parse(std::unique_ptr<ByteReader>& reader) {
 	this->m_is_visible = this->get_name() == "RuntimeVisibleAnnotations";
 
-	const auto num_annotations = this->read_u2();
+	const auto num_annotations = reader->read_u2();
 
 	for (auto i = 0; i < num_annotations; i++) {
-		this->m_annotations.push_back(this->parse_annotation());
+		this->m_annotations.push_back(this->parse_annotation(reader));
 	}
 }
 
@@ -22,12 +22,11 @@ std::vector<u1> RuntimeAnnotationsAttribute::get_bytes() {
 		this->get_annotation_bytes(writer, annotation);
 	}
 
-	return writer->m_bytes;
+	return writer->get_bytes();
 }
 
 void RuntimeAnnotationsAttribute::add_annotation(std::shared_ptr<JavaAnnotation> annotation) {
 	this->m_annotations.push_back(annotation);
-	this->update();
 }
 
 void RuntimeAnnotationsAttribute::remove_annotation(const std::string& name) {
@@ -36,6 +35,4 @@ void RuntimeAnnotationsAttribute::remove_annotation(const std::string& name) {
 			this->m_annotations.erase(it--);
 		}
 	}
-
-	this->update();
 }

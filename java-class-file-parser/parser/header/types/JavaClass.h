@@ -39,8 +39,8 @@ public:
 
 	// getters
 	std::shared_ptr<ConstantPool> get_constant_pool();
-	const std::vector<JavaField*> get_fields();
-	const std::vector<JavaMethod*> get_methods();
+	const std::vector<std::shared_ptr<JavaField>> get_fields();
+	const std::vector<std::shared_ptr<JavaMethod>> get_methods();
 
 	// setters
 	void set_minor_version(u2 new_minor_version);

@@ -27,6 +27,11 @@ public:
 		this->m_bytes.push_back((u1)(bytes & 255));
 	}
 
+	std::vector<u1> get_bytes() {
+		return this->m_bytes;
+	}
+
+private:
 	// bytes
 	std::vector<u1> m_bytes;
 };

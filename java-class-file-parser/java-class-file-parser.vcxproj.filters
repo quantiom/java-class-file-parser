@@ -116,5 +116,8 @@
     <ClInclude Include="parser\header\utils\magic_enum.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="parser\header\attributes\UnparsedJavaAttribute.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

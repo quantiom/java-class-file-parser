@@ -5,15 +5,11 @@
 
 class ConstantValueAttribute : public JavaAttribute {
 public:
-	// used in the variant
 	ConstantValueAttribute() : JavaAttribute() {};
-
 	ConstantValueAttribute(JavaClass* java_class, std::shared_ptr<JavaAttribute> attribute) : JavaAttribute(java_class, attribute) {};
+	ConstantValueAttribute(JavaClass* java_class, u2 name_index) : JavaAttribute(java_class, name_index) {};
 
-	ConstantValueAttribute(JavaClass* java_class, u2 name_index, std::vector<u1> info)
-		: JavaAttribute(java_class, name_index, info) {};
-
-	void parse();
+	void parse(std::unique_ptr<ByteReader>& reader);
 	std::vector<u1> get_bytes();
 
 	const auto get_constantvalue_index() { return this->m_constantvalue_index; }
