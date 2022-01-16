@@ -32,7 +32,7 @@ public:
 	JavaClass(std::vector<u1> bytes) : AttributeReader(this, bytes), AttributeHolder(this) {};
 
 	// parses the class file
-	JavaClass* parse();
+	void parse();
 
 	// get the new bytes of the class file
 	std::vector<u1> get_bytes();
@@ -74,11 +74,9 @@ private:
 	// index of all interfaces this classes implements in the constant pool (to CONSTANT_Class-es)
 	std::vector<u2> m_interfaces;
 
-	// TODO: convert to smart ptrs
-
 	// fields
-	std::vector<JavaField*> m_fields;
+	std::vector<std::shared_ptr<JavaField>> m_fields;
 
 	// methods
-	std::vector<JavaMethod*> m_methods;
+	std::vector<std::shared_ptr<JavaMethod>> m_methods;
 };

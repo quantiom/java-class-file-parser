@@ -3,7 +3,7 @@
 #include "../../header/utils/AttributeWriter.h"
 #include "../../header/attributes/CodeAttribute.h"
 
-JavaClass* JavaClass::parse() {
+void JavaClass::parse() {
 	if (this->read_u4() != 0xCAFEBABE) {
 		throw std::invalid_argument("Invalid java class file. Does not have 0xCAFEBABE magic.");
 	}
@@ -23,8 +23,6 @@ JavaClass* JavaClass::parse() {
 	this->parse_fields();
 	this->parse_methods();
 	this->parse_attributes();
-
-	return this;
 }
 
 std::vector<u1> JavaClass::get_bytes() {
@@ -96,11 +94,11 @@ std::shared_ptr<ConstantPool> JavaClass::get_constant_pool() {
 	return this->m_constant_pool;
 }
 
-const std::vector<JavaField*> JavaClass::get_fields() {
+const std::vector<std::shared_ptr<JavaField>> JavaClass::get_fields() {
 	return this->m_fields;
 }
 
-const std::vector<JavaMethod*> JavaClass::get_methods() {
+const std::vector<std::shared_ptr<JavaMethod>> JavaClass::get_methods() {
 	return this->m_methods;
 }
 
@@ -144,7 +142,7 @@ void JavaClass::parse_fields() {
 			attributes.push_back(this->read_attribute());
 		}
 
-		this->m_fields.push_back(new JavaField(this, access_flags, name_index, descriptor_index, attributes));
+		this->m_fields.push_back(std::make_shared<JavaField>(new JavaField(this, access_flags, name_index, descriptor_index, attributes)));
 	}
 }
 
