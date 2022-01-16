@@ -11,7 +11,7 @@ void JavaClass::parse() {
 	this->m_minor_version = this->read_u2();
 	this->m_major_version = this->read_u2();
 
-	this->m_constant_pool = std::make_shared<ConstantPool>(ConstantPool());
+	this->m_constant_pool = std::make_shared<ConstantPool>();
 	this->m_constant_pool->parse(this);
 
 	this->m_access_flags = this->read_u2();

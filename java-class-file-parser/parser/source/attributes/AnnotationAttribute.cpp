@@ -14,7 +14,7 @@ std::shared_ptr<JavaAnnotation> AnnotationAttribute::parse_annotation(std::uniqu
 		element_value_pairs.push_back(std::make_pair<>(element_name_index, element_value));
 	}
 
-	return std::make_shared<JavaAnnotation>(JavaAnnotation(this->m_java_class, type_index, element_value_pairs));
+	return std::make_shared<JavaAnnotation>(this->m_java_class, type_index, element_value_pairs);
 }
 
 AnnotationElementValue* AnnotationAttribute::parse_element_value(std::unique_ptr<ByteReader>& reader) {

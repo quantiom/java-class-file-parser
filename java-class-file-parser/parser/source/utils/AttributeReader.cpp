@@ -32,7 +32,7 @@ std::shared_ptr<ParsedAttribute> AttributeReader::read_attribute() {
 			attribute = std::make_shared<ParsedAttribute>(UnparsedJavaAttribute(this->m_java_class, attribute_name_index));
 	}
 
-	auto reader = std::make_unique<ByteReader>(ByteReader(this->m_java_class, attribute_info));
+	auto reader = std::make_unique<ByteReader>(this->m_java_class, attribute_info);
 
 	// parse the attribute with the class's parse() method
 	std::visit([&reader](auto& a) { a.parse(reader); }, *attribute);

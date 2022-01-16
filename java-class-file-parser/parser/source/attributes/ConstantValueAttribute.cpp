@@ -7,7 +7,7 @@ void ConstantValueAttribute::parse(std::unique_ptr<ByteReader>& reader) {
 }
 
 std::vector<u1> ConstantValueAttribute::get_bytes() {
-	const auto writer = std::make_unique<ByteWriter>(ByteWriter());
+	const auto writer = std::make_unique<ByteWriter>();
 
 	writer->write_u2(this->m_constantvalue_index);
 

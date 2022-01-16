@@ -195,7 +195,7 @@ std::vector<std::string> CodeAttribute::get_code_string() {
 	for (const auto [instruction_type, instruction_bytes] : this->m_instructions) {
 		std::stringstream ss;
 		const auto instruction_name = magic_enum::enum_name(instruction_type);
-		const auto reader = std::make_unique<ByteReader>(ByteReader(this->m_java_class, instruction_bytes));
+		const auto reader = std::make_unique<ByteReader>(this->m_java_class, instruction_bytes);
 
 		if (instruction_name.starts_with("IF") || instruction_name.starts_with("GOTO") || instruction_name.starts_with("JSR")) {
 			u4 label_idx;
