@@ -5,7 +5,7 @@ std::shared_ptr<JavaAnnotation> AnnotationAttribute::parse_annotation(std::uniqu
 	const auto type_index = reader->read_u2();
 	const auto num_element_value_pairs = reader->read_u2();
 
-	std::vector<std::pair<u2, AnnotationElementValue*>> element_value_pairs;
+	std::vector<std::pair<u2, std::shared_ptr<AnnotationElementValue>>> element_value_pairs;
 
 	for (auto i = 0; i < num_element_value_pairs; i++) {
 		auto element_name_index = reader->read_u2();
@@ -17,10 +17,10 @@ std::shared_ptr<JavaAnnotation> AnnotationAttribute::parse_annotation(std::uniqu
 	return std::make_shared<JavaAnnotation>(this->m_java_class, type_index, element_value_pairs);
 }
 
-AnnotationElementValue* AnnotationAttribute::parse_element_value(std::unique_ptr<ByteReader>& reader) {
+std::shared_ptr<AnnotationElementValue> AnnotationAttribute::parse_element_value(std::unique_ptr<ByteReader>& reader) {
 	const auto element_value_tag = reader->read_u1();
 
-	AnnotationElementValue* element_value = new AnnotationElementValue(element_value_tag);
+	auto element_value = std::make_shared<AnnotationElementValue>(element_value_tag);
 
 	if (element_value->is_const_value()) { // Const Value
 		element_value->m_const_value_index = reader->read_u2();
@@ -42,13 +42,13 @@ void AnnotationAttribute::get_annotation_bytes(std::unique_ptr<ByteWriter>& writ
 	writer->write_u2(annotation->get_type_index());
 	writer->write_u2((u2)annotation->get_element_value_pairs().size());
 
-	for (const auto& [name_index, element_value] : annotation->get_element_value_pairs()) {
+	for (auto& [name_index, element_value] : annotation->get_element_value_pairs()) {
 		writer->write_u2(name_index);
 		this->get_element_value_bytes(writer, element_value);
 	}
 }
 
-void AnnotationAttribute::get_element_value_bytes(std::unique_ptr<ByteWriter>& writer, AnnotationElementValue* element_value) {
+void AnnotationAttribute::get_element_value_bytes(std::unique_ptr<ByteWriter>& writer, std::shared_ptr<AnnotationElementValue>& element_value) {
 	if (element_value->is_const_value()) { // Const Value
 		writer->write_u2(element_value->m_const_value_index);
 	} else if (element_value->is_enum_const()) { // Enum Constant
@@ -59,7 +59,7 @@ void AnnotationAttribute::get_element_value_bytes(std::unique_ptr<ByteWriter>& w
 	} else if (element_value->is_annotation_value()) { // Nested Annotation
 		this->get_annotation_bytes(writer, element_value->m_annotation_value);
 	} else if (element_value->is_array_value()) { // Array
-		for (const auto& nested_element_value : element_value->m_array_value.m_element_values) {
+		for (auto& nested_element_value : element_value->m_array_value.m_element_values) {
 			this->get_element_value_bytes(writer, nested_element_value);
 		}
 	}

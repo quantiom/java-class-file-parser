@@ -13,11 +13,11 @@ public:
 	std::shared_ptr<JavaAnnotation> parse_annotation(std::unique_ptr<ByteReader>& reader);
 
 	// parse an annotation element value at the current byte index
-	AnnotationElementValue* parse_element_value(std::unique_ptr<ByteReader>& reader);
+	std::shared_ptr<AnnotationElementValue> parse_element_value(std::unique_ptr<ByteReader>& reader);
 
 	// write an annotation into a ByteWriter
 	void get_annotation_bytes(std::unique_ptr<ByteWriter>& writer, std::shared_ptr<JavaAnnotation> annotation);
 
 	// write an annotation element value into a ByteWriter
-	void get_element_value_bytes(std::unique_ptr<ByteWriter>& writer, AnnotationElementValue* annotation);
+	void get_element_value_bytes(std::unique_ptr<ByteWriter>& writer, std::shared_ptr<AnnotationElementValue>& annotation);
 };

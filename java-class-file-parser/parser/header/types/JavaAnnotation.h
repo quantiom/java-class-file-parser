@@ -9,6 +9,7 @@
 struct JavaAnnotation;
 struct AnnotationElementValue;
 
+// TODO: convert to variant (I think - since it's tagged it can't be a union)
 struct AnnotationElementValue {
 	AnnotationElementValue(u1 tag) : m_tag(tag) {};
 	
@@ -27,7 +28,7 @@ struct AnnotationElementValue {
 	std::shared_ptr<JavaAnnotation> m_annotation_value;
 
 	struct {
-		std::vector<AnnotationElementValue*> m_element_values;
+		std::vector<std::shared_ptr<AnnotationElementValue>> m_element_values;
 	} m_array_value;
 
 	bool is_const_value() {
@@ -53,16 +54,16 @@ struct AnnotationElementValue {
 };
 
 struct JavaAnnotation : public JavaType {
-	JavaAnnotation(JavaClass* java_class, u2 type_index, std::vector<std::pair<u2, AnnotationElementValue*>> element_value_pairs)
+	JavaAnnotation(JavaClass* java_class, u2 type_index, std::vector<std::pair<u2, std::shared_ptr<AnnotationElementValue>>> element_value_pairs)
 		: JavaType(java_class), m_type_index(type_index), m_element_value_pairs(element_value_pairs) {};
 
 	const std::string get_name();
 	const auto get_type_index() { return this->m_type_index; }
-	const auto get_element_value_pairs() { return this->m_element_value_pairs; }
+	auto get_element_value_pairs() { return this->m_element_value_pairs; }
 
 private:
 	u2 m_type_index;
 
 	// descriptor index - element value
-	std::vector<std::pair<u2, AnnotationElementValue*>> m_element_value_pairs;
+	std::vector<std::pair<u2, std::shared_ptr<AnnotationElementValue>>> m_element_value_pairs;
 };
