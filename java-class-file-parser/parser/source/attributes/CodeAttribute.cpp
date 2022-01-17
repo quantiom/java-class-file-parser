@@ -116,6 +116,9 @@ std::vector<u1> CodeAttribute::get_bytes() {
 
 	for (const auto& [instruction, bytes] : this->m_instructions) {
 		if (instruction != BytecodeInstruction::LABEL) {
+			auto code_reader = std::make_unique<ByteReader>(this->m_java_class, bytes);
+			auto code_writer = std::make_unique<ByteWriter>();
+
 			const auto instruction_name = magic_enum::enum_name(instruction);
 
 			code.push_back((u1)instruction);
@@ -125,34 +128,63 @@ std::vector<u1> CodeAttribute::get_bytes() {
 				bool is_wide = instruction_name.ends_with("_W");
 
 				if (is_wide) {
-					label_idx = (u2)((bytes[0] << 24) | (bytes[1] << 16) | (bytes[2] << 8) | bytes[3]);
+					label_idx = (u2)code_reader->read_u4();;
 				} else {
-					label_idx = (u2)((bytes[0] << 8) | bytes[1]);
+					label_idx = code_reader->read_u2();
 				}
 
 				const s4 jump_offset = this->m_label_to_address[label_idx] - current_address;
 
 				if (is_wide) {
-					code.push_back((u1)((jump_offset >> 24) & 255));
-					code.push_back((u1)((jump_offset >> 16) & 255));
-					code.push_back((u1)((jump_offset >> 8) & 255));
-					code.push_back((u1)(jump_offset & 255));
-
-					current_address += 4;
+					code_writer->write_s4(jump_offset);
 				} else {
-					code.push_back((u1)((jump_offset >> 8) & 255));
-					code.push_back((u1)(jump_offset & 255));
+					code_writer->write_s2((s2)jump_offset);
+				}
+			} else if (instruction == BytecodeInstruction::LOOKUPSWITCH || instruction == BytecodeInstruction::TABLESWITCH) {
+				u1 pad_amount = 0;
 
-					current_address += 2;
+				while (((current_address + 1) + pad_amount) % 4 != 0) {
+					code_writer->write_u1(code_reader->read_u1());
+					pad_amount++;
+				}
+
+				const auto default_label = code_reader->read_u4();
+				code_writer->write_s4(this->m_label_to_address[default_label] - current_address);
+				
+				if (instruction == BytecodeInstruction::LOOKUPSWITCH) {
+					const auto num_offsets = code_reader->read_u4();
+					code_writer->write_u4(num_offsets);
+
+					for (size_t j = 0; j < num_offsets; j++) {
+						const auto match = code_reader->read_u4();
+						const auto label = code_reader->read_u4();
+
+						code_writer->write_u4(match);
+						code_writer->write_s4(this->m_label_to_address[label] - current_address);
+
+					}
+				} else {
+					s4 low = code_reader->read_s4();
+					s4 high = code_reader->read_s4();
+
+					code_writer->write_s4(low);
+					code_writer->write_s4(high);
+
+					for (size_t j = 0; j < (high - low + 1); j++) {
+						code_writer->write_s4(this->m_label_to_address[code_reader->read_u4()] - current_address);
+					}
 				}
 			} else {
 				for (const auto& byte : bytes) {
-					code.push_back(byte);
-					current_address++;
+					code_writer->write_u1(byte);
 				}
 			}
-		
-			current_address++;
+
+			current_address += 1 + code_writer->get_bytes().size();
+
+			for (const auto& byte : code_writer->get_bytes()) {
+				code.push_back(byte);
+			}
 		}
 	}
 
@@ -191,6 +223,7 @@ std::vector<u1> CodeAttribute::get_bytes() {
 
 std::vector<std::string> CodeAttribute::get_code_string() {
 	std::vector<std::string> list{};
+	u4 current_address = 0;
 
 	for (const auto [instruction_type, instruction_bytes] : this->m_instructions) {
 		std::stringstream ss;
@@ -202,8 +235,10 @@ std::vector<std::string> CodeAttribute::get_code_string() {
 
 			if (instruction_name.ends_with("_W")) {
 				label_idx = reader->read_u4();
+				current_address += 4;
 			} else {
 				label_idx = reader->read_u2();
+				current_address += 2;
 			}
 
 			ss << instruction_name << " " << this->m_label_to_name[label_idx];
@@ -218,6 +253,8 @@ std::vector<std::string> CodeAttribute::get_code_string() {
 				} else {
 					ss << instruction_name << " #" << idx << " // " << get_constant_pool_string_for_code(idx);
 				}
+
+				current_address += 2;
 			} else if (instruction_bytes.size() == 1) {
 				const auto idx = reader->read_u1();
 
@@ -226,6 +263,8 @@ std::vector<std::string> CodeAttribute::get_code_string() {
 				} else {
 					ss << instruction_name << " " << (u4)idx;
 				}
+
+				current_address += 1;
 			} else {
 				switch (instruction_type) {
 					case BytecodeInstruction::INVOKEDYNAMIC:
@@ -233,18 +272,69 @@ std::vector<std::string> CodeAttribute::get_code_string() {
 					case BytecodeInstruction::INVOKESPECIAL: {
 						const auto idx = reader->read_u2();
 						ss << instruction_name << " #" << idx << " // " << get_constant_pool_string_for_code(idx);
-						break;
-					}
-					case BytecodeInstruction::JSR_W:
-					case BytecodeInstruction::GOTO_W: {
-						const auto offset = reader->read_u4();
-						ss << instruction_name << " " << offset;
+						current_address += 2;
 						break;
 					}
 					case BytecodeInstruction::MULTIANEWARRAY: {
 						const auto class_ref = reader->read_u2();
 						const auto dimensions = reader->read_u1();
 						ss << instruction_name << " #" << class_ref << " " << dimensions << " // " << get_constant_pool_string_for_code(class_ref);
+						current_address += 3;
+						break;
+					}
+					case BytecodeInstruction::TABLESWITCH:
+					case BytecodeInstruction::LOOKUPSWITCH: {
+						u1 pad_amount = 0;
+
+						while (((current_address + 1) + pad_amount) % 4 != 0) {
+							reader->read_u1(reader->read_u1());
+							pad_amount++;
+						}
+
+						current_address += pad_amount;
+
+						const auto default_label_name = this->m_label_to_name[reader->read_u4()];
+						
+						if (instruction_type == BytecodeInstruction::LOOKUPSWITCH) {
+							ss << instruction_name << " mapping[";
+
+							const auto num_offsets = reader->read_u4();
+							current_address += 8;
+
+							for (size_t j = 0; j < num_offsets; j++) {
+								const auto match = reader->read_u4();
+								const auto label = reader->read_u4();
+
+								ss << match << "=" << this->m_label_to_name[label];
+
+								if (j != num_offsets - 1) {
+									ss << ", ";
+								}
+
+								current_address += 8;
+							}
+
+							ss << "] default[" << default_label_name << "]";
+						} else {
+							const auto low = reader->read_s4();
+							const auto high = reader->read_s4();
+							current_address += 8;
+
+							ss << instruction_name << " range[" << low << ":" << high << "] labels[";
+
+							for (size_t j = 0; j < (high - low + 1); j++) {
+								ss << this->m_label_to_name[reader->read_u4()];
+
+								if (j != (high - low)) {
+									ss << ", ";
+								}
+
+								current_address += 4;
+							}
+
+							ss << "] default[" << default_label_name << "]";
+						}
+
 						break;
 					}
 					default:
@@ -253,6 +343,8 @@ std::vector<std::string> CodeAttribute::get_code_string() {
 				}
 			}
 		}
+
+		current_address++; // for the instruction
 
 		if (!ss.str().empty()) {
 			list.push_back(ss.str());
@@ -288,23 +380,35 @@ std::string CodeAttribute::get_label_name(u2 idx) {
 	return str;
 }
 
+u2 CodeAttribute::get_label_index(u4 find_address) {
+	for (const auto& [label_key, address] : this->m_label_to_address) {
+		if (find_address == address) {
+			return label_key;
+		}
+	}
+
+	return this->m_current_label_index++;
+}
+
+u2 CodeAttribute::get_or_create_label(u4 address) {
+	const auto label_index = this->get_label_index(address);
+
+	if (this->m_label_to_address.find(label_index) != this->m_label_to_address.end()) 
+		return label_index;
+
+	this->m_label_to_address[label_index] = address;
+	this->m_label_to_name[label_index] = this->get_label_name(label_index);
+
+	return label_index;
+}
+
 void CodeAttribute::parse_instructions(std::vector<u1> code) {
-	auto reader = std::make_unique<ByteReader>(ByteReader(this->m_java_class, code));
+	auto reader = std::make_unique<ByteReader>(this->m_java_class, code);
 
 	u4 current_address = 0;
 
-	const auto get_label_index = [this](const u4& find_address) {
-		for (const auto& [label_key, address] : this->m_label_to_address) {
-			if (find_address == address) {
-				return label_key;
-			}
-		}
-
-		return this->m_current_label_index++;
-	};
-
 	for (int i = 0; i < code.size(); i++) {
-		std::vector<u1> bytes;
+		auto writer = std::make_unique<ByteWriter>();
 
 		const auto instruction = (BytecodeInstruction)reader->read_u1();
 		const auto instruction_name = magic_enum::enum_name(instruction);
@@ -320,41 +424,22 @@ void CodeAttribute::parse_instructions(std::vector<u1> code) {
 				offset = (s4)reader->read_s2();
 			}
 
-			const auto absolute_jump_address = current_address + offset;
-
-			const auto label_index = get_label_index(absolute_jump_address);
-
-			if (!this->m_label_to_address.contains(label_index)) {
-				this->m_label_to_address[label_index] = absolute_jump_address;
-				this->m_label_to_name[label_index] = this->get_label_name(label_index);
-			}
+			const auto label_index = this->get_or_create_label(current_address + offset);
 
 			if (is_wide) {
 				auto wide_label_index = (u4)label_index;
-
-				bytes.push_back((u1)((wide_label_index >> 24) & 255));
-				bytes.push_back((u1)((wide_label_index >> 16) & 255));
-				bytes.push_back((u1)((wide_label_index >> 8) & 255));
-				bytes.push_back((u1)(wide_label_index & 255));
-
+				writer->write_u4(wide_label_index);
 				i += 4;
 			} else {
-				bytes.push_back((label_index >> 8) & 255);
-				bytes.push_back(label_index & 255);
-				
+				writer->write_u2(label_index);
 				i += 2;
 			}
 		} else {
 			if (std::find(TWO_BYTE_ARG_INSTRUCTIONS.begin(), TWO_BYTE_ARG_INSTRUCTIONS.end(), instruction) != TWO_BYTE_ARG_INSTRUCTIONS.end()) {
-				const auto idx = reader->read_u2();
-
-				bytes.push_back((idx >> 8) & 255);
-				bytes.push_back(idx & 255);
-
+				writer->write_u2(reader->read_u2());
 				i += 2;
 			} else if (std::find(ONE_BYTE_ARG_INSTRUCTIONS.begin(), ONE_BYTE_ARG_INSTRUCTIONS.end(), instruction) != ONE_BYTE_ARG_INSTRUCTIONS.end()) {
-				bytes.push_back(reader->read_u1());
-
+				writer->write_u1(reader->read_u1());
 				i += 1;
 			} else {
 				switch (instruction) {
@@ -362,11 +447,59 @@ void CodeAttribute::parse_instructions(std::vector<u1> code) {
 					case BytecodeInstruction::INVOKEINTERFACE:
 					case BytecodeInstruction::INVOKESPECIAL:
 					case BytecodeInstruction::MULTIANEWARRAY: {
-						bytes.push_back(reader->read_u1());
-						bytes.push_back(reader->read_u1());
-						bytes.push_back(reader->read_u1());
+						writer->write_u1(reader->read_u1());
+						writer->write_u1(reader->read_u1());
+						writer->write_u1(reader->read_u1());
 
 						i += 3;
+						break;
+					}
+					case BytecodeInstruction::TABLESWITCH:
+					case BytecodeInstruction::LOOKUPSWITCH: {
+						// between 0-3, to align default byte 1 at a multiple of 4 bytes
+						u1 pad_amount = 0;
+
+						while (((current_address + 1) + pad_amount) % 4 != 0) {
+							writer->write_u1(reader->read_u1());
+							pad_amount++;
+						}
+
+						i += pad_amount;
+
+						// default label
+						writer->write_u4(this->get_or_create_label(current_address + reader->read_s4()));
+						i += 4;
+
+						if (instruction == BytecodeInstruction::LOOKUPSWITCH) {
+							s4 num_pairs = reader->read_s4();
+							writer->write_s4(num_pairs);
+
+							i += 4;
+
+							for (size_t j = 0; j < num_pairs; j++) {
+								auto match = reader->read_u4();
+								auto offset = reader->read_s4();
+
+								writer->write_u4(match);
+								writer->write_u4(this->get_or_create_label(current_address + offset));
+
+								i += 8;
+							}
+						} else {
+							s4 low = reader->read_s4();
+							s4 high = reader->read_s4();
+						
+							writer->write_s4(low);
+							writer->write_s4(high);
+
+							i += 8;
+						
+							for (size_t j = 0; j < (high - low + 1); j++) {
+								writer->write_u4(this->get_or_create_label(current_address + reader->read_s4()));
+								i += 4;
+							}
+						}
+
 						break;
 					}
 				}
@@ -374,10 +507,10 @@ void CodeAttribute::parse_instructions(std::vector<u1> code) {
 		}
 
 		if (instruction != BytecodeInstruction::LABEL) {
-			current_address += 1 + (u4)bytes.size();
+			current_address += 1 + (u4)writer->get_bytes().size();
 		}
 
-		this->m_instructions.push_back(std::make_pair(instruction, bytes));
+		this->m_instructions.push_back(std::make_pair(instruction, writer->get_bytes()));
 	}
 
 	// add exception labels

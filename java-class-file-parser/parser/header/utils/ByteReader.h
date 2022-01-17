@@ -20,6 +20,12 @@ public:
 		return ret;
 	}
 
+	s2 read_s4() {
+		const auto ret = this->read_s4(this->m_current_byte_index);
+		this->m_current_byte_index += 4;
+		return ret;
+	}
+
 	u2 read_u2() {
 		const auto ret = this->read_u2(this->m_current_byte_index);
 		this->m_current_byte_index += 2;
@@ -39,6 +45,10 @@ public:
 	}
 
 	u4 read_u4(size_t start_idx) {
+		return this->m_bytes[start_idx + 3] | (this->m_bytes[start_idx + 2] << 8) | (this->m_bytes[start_idx + 1] << 16) | (this->m_bytes[start_idx] << 24);
+	}
+
+	s4 read_s4(size_t start_idx) {
 		return this->m_bytes[start_idx + 3] | (this->m_bytes[start_idx + 2] << 8) | (this->m_bytes[start_idx + 1] << 16) | (this->m_bytes[start_idx] << 24);
 	}
 

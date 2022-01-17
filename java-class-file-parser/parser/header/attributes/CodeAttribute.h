@@ -258,8 +258,10 @@ private:
     std::vector<std::shared_ptr<BasicAttribute>> m_attributes;
 
     std::string get_label_name(u2 idx);
+    u2 get_label_index(u4 address);
+    u2 get_or_create_label(u4 address);
 
-    // TODO: lookupswitch & tableswitch 
+    // TODO: "WIDE" instruction
     void parse_instructions(std::vector<u1> code);
 
 	std::string get_constant_pool_string_for_code(u2 idx);
