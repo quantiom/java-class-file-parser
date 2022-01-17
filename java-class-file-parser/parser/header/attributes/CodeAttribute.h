@@ -244,6 +244,10 @@ public:
 
 	std::vector<std::string> get_code_string();
 
+    // TODO: from_code_string(std::string OR std::vector<std::string> code_string)
+    // and m_instructions, m_label_to_name?, m_label_to_address, m_current_label_index, m_exception_table
+    // should stay the same when from_code_string(get_code_string()) is called
+
 private:
 	u2 m_max_stack;
 	u2 m_max_locals;
