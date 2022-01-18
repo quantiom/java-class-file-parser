@@ -18,6 +18,7 @@ public:
 	const auto is_visible() { return this->m_is_visible; }
 	const auto get_annotations() { return this->m_annotations; }
 	void add_annotation(std::shared_ptr<JavaAnnotation> annotation);
+	void remove_annotation(const std::shared_ptr<JavaAnnotation>& annotation);
 	void remove_annotation(const std::string& name);
 
 private:

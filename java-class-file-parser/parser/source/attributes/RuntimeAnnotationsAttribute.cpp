@@ -29,6 +29,14 @@ void RuntimeAnnotationsAttribute::add_annotation(std::shared_ptr<JavaAnnotation>
 	this->m_annotations.push_back(annotation);
 }
 
+void RuntimeAnnotationsAttribute::remove_annotation(const std::shared_ptr<JavaAnnotation>& annotation) {
+	for (auto it = this->m_annotations.begin(); it != this->m_annotations.end(); it++) {
+		if ((*it) == annotation) {
+			this->m_annotations.erase(it--);
+		}
+	}
+}
+
 void RuntimeAnnotationsAttribute::remove_annotation(const std::string& name) {
 	for (auto it = this->m_annotations.begin(); it != this->m_annotations.end(); it++) {
 		if ((*it)->get_name() == name) {

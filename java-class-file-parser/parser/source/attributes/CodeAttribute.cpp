@@ -180,7 +180,7 @@ std::vector<u1> CodeAttribute::get_bytes() {
 				}
 			}
 
-			current_address += 1 + code_writer->get_bytes().size();
+			current_address += 1 + (u4)code_writer->get_bytes().size();
 
 			for (const auto& byte : code_writer->get_bytes()) {
 				code.push_back(byte);

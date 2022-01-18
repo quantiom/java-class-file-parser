@@ -15,9 +15,25 @@ int main() {
     java_class->parse();
 
     for (const auto& field : java_class->get_fields()) {
-        if (field->get_name() == "someField") {
-            field->set_deprecated(false);
-            field->remove_annotation("Ljdk/nashorn/internal/runtime/logging/Logger;", true); // just some random annotation for testing
+        if (field->get_name() == "someStr") {
+            const auto annotations = field->get_annotations(true);
+            const auto test_annotation = std::find_if(annotations.begin(), annotations.end(), [](auto& annotation) {
+                return annotation->get_name() == "Lme/quantiom/testing/TestAnnotation;";
+            });
+
+            if (test_annotation != annotations.end()) {
+                std::cout << "Test Annotation type: " << java_class->get_constant_pool()->get_string((*test_annotation)->get_type_index()) << "\n";
+
+                for (const auto& [e, v] : (*test_annotation)->get_element_value_pairs()) {
+                    if (v->is_const_value()) {
+                        std::cout << java_class->get_constant_pool()->get_string(e) << " : " << java_class->get_constant_pool()->get_string(v->m_const_value_index) << "\n";
+                    }
+                }
+
+                field->remove_annotation(*test_annotation, true);
+            }
+
+            if (field->is_deprecated()) field->set_deprecated(false);
         }
     }
 

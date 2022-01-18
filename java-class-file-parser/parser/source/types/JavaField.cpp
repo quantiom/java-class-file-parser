@@ -29,7 +29,15 @@ void JavaField::set_deprecated(bool new_value) {
 		this->m_attributes.push_back(std::make_shared<ParsedAttribute>(DeprecatedAttribute(this->m_java_class, this->m_java_class->get_constant_pool()->get_or_add_utf8("Deprecated"))));
 	} else {
 		this->remove_attribute<DeprecatedAttribute>();
-		this->remove_annotation("Ljava/lang/Deprecated;", true);
+		
+		const auto annotations = this->get_annotations(true);
+		const auto deprecated_annotation = std::find_if(annotations.begin(), annotations.end(), [](auto& annotation) {
+			return annotation->get_name() == "Ljava/lang/Deprecated;";
+		});
+
+		if (deprecated_annotation != annotations.end()) {
+			this->remove_annotation(*deprecated_annotation, true);
+		}
 	}
 
 	this->m_deprecated = new_value;
@@ -55,7 +63,7 @@ const std::vector<std::shared_ptr<JavaAnnotation>> JavaField::get_annotations(bo
 	return {};
 }
 
-const void JavaField::add_annotation(std::shared_ptr<JavaAnnotation> annotation, bool runtime_visible) {
+void JavaField::add_annotation(std::shared_ptr<JavaAnnotation> annotation, bool runtime_visible) {
 	std::shared_ptr<ParsedAttribute> attribute;
 
 	if (runtime_visible) {
@@ -83,16 +91,16 @@ const void JavaField::add_annotation(std::shared_ptr<JavaAnnotation> annotation,
 	}
 }
 
-const void JavaField::remove_annotation(const std::string& name, bool runtime_visible) {
+void JavaField::remove_annotation(const std::shared_ptr<JavaAnnotation>& annotation, bool runtime_visible) {
 	if (runtime_visible) {
 		if (const auto found_attribute = this->get_attribute<RuntimeVisibleAnnotationsAttribute>(); found_attribute != nullptr) {
-			std::get<RuntimeVisibleAnnotationsAttribute>(**found_attribute).remove_annotation(name);
+			std::get<RuntimeVisibleAnnotationsAttribute>(**found_attribute).remove_annotation(annotation);
 		}
 	} else {
 		const auto found_attribute = this->get_attribute<RuntimeInvisibleAnnotationsAttribute>();
 		
 		if (const auto found_attribute = this->get_attribute<RuntimeInvisibleAnnotationsAttribute>(); found_attribute != nullptr) {
-			std::get<RuntimeInvisibleAnnotationsAttribute>(**found_attribute).remove_annotation(name);
+			std::get<RuntimeInvisibleAnnotationsAttribute>(**found_attribute).remove_annotation(annotation);
 		}
 	}
 }
