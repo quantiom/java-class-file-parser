@@ -22,6 +22,8 @@ struct JavaMethod : public AttributeHolder {
 	std::string get_name();
 	std::string get_descriptor();
 
+	bool has_code_attribute();
+
 private:
 	u2 m_access_flags;
 	u2 m_name_index;

@@ -40,10 +40,17 @@ int main() {
     for (const auto& method : java_class->get_methods()) {
         if (method->get_name() == "main") {
             if (auto code_attribute = method->get_attribute<CodeAttribute>()) {
-                const auto bytecode = std::get<CodeAttribute>(**code_attribute).get_code_string();
+                auto attribute = std::get<CodeAttribute>(**code_attribute);
+                const auto bytecode = attribute.get_code_string();
 
-                for (const auto& line : bytecode) {
-                    std::cout << line << std::endl;
+                std::vector<std::string> new_code = {
+                    "GETSTATIC java/lang/System.out Ljava/io/PrintStream;"
+                };
+                
+                try {
+                    attribute.set_code(new_code);
+                } catch (std::exception e) {
+                    std::cout << e.what() << "\n";
                 }
             }
         }

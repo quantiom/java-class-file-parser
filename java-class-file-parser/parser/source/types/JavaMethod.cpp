@@ -8,3 +8,7 @@ std::string JavaMethod::get_name() {
 std::string JavaMethod::get_descriptor() {
 	return this->m_java_class->get_constant_pool()->get_string(this->m_descriptor_index);
 }
+
+bool JavaMethod::has_code_attribute() {
+	return this->get_attribute<CodeAttribute>().has_value();
+}

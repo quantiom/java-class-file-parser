@@ -1,6 +1,7 @@
 #include "../../header/attributes/CodeAttribute.h"
 #include "../../header/types/JavaClass.h"
 #include "../../header/utils/magic_enum.h"
+#include "../../header/utils/Utils.h"
 
 #include <sstream>
 
@@ -354,8 +355,57 @@ std::vector<std::string> CodeAttribute::get_code_string() {
 	return list;
 }
 
+void CodeAttribute::set_code(std::vector<std::string> code) {
+	this->m_label_to_address.clear();
+	this->m_label_to_name.clear();
+	this->m_current_label_index = 0;
+	this->m_exception_table.clear();
+	this->m_instructions.clear();
+	this->m_max_stack = 65535; // TODO
+	this->m_max_locals = 65535; // TODO
+
+	for (size_t i = 0; i < code.size(); i++) {
+		const auto line = code.at(i);
+		const auto lineNumber = std::to_string(i + 1);
+
+		if (line.empty()) continue;
+
+		const auto split = utils::split(line, " ");
+		auto arguments = split;
+		arguments.erase(arguments.begin());
+		
+		const auto instruction_str = split[0];
+
+		auto upper_case_instruction = split[0];
+		for (auto& c : upper_case_instruction) c = std::toupper(c);
+
+		std::cout << "instruction: " << instruction_str << "\n";
+
+		// instruction doesn't exist
+		if (!magic_enum::enum_contains<BytecodeInstruction>(upper_case_instruction)) {
+			throw std::invalid_argument("Invalid instruction \"" + instruction_str + "\" on line " + lineNumber);
+		}
+
+		auto instruction = magic_enum::enum_cast<BytecodeInstruction>(upper_case_instruction).value();
+
+		switch (instruction) {
+			case BytecodeInstruction::GETSTATIC: {
+				if (arguments.size() != 2) {
+					throw std::invalid_argument("Invalid arguments to " + upper_case_instruction + " on line " + lineNumber + ". Expected 2 (class.field, descriptor), received " + std::to_string(arguments.size()));
+				}
+
+
+
+				break;
+			}
+		}
+	}
+}
+
 // Credit: https://github.com/Col-E/Recaf/blob/56c3b78d07caebbb3aa07ccc0a1d91200749f098/src/main/java/me/coley/recaf/util/StringUtil.java#L56-L81
 std::string CodeAttribute::get_label_name(u2 idx) {
+	if (this->m_label_to_name.contains(idx)) return this->m_label_to_name.at(idx);
+
 	static const std::vector<char> letters{ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
 
 	std::string str;

@@ -177,6 +177,7 @@
     <ClInclude Include="parser\header\utils\ConstantPool.h" />
     <ClInclude Include="parser\header\utils\FnvHash.h" />
     <ClInclude Include="parser\header\utils\magic_enum.h" />
+    <ClInclude Include="parser\header\utils\Utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
