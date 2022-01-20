@@ -168,7 +168,7 @@ std::pair<std::string, std::string> ConstantPool::get_name_and_type(size_t idx) 
 	return std::make_pair<std::string, std::string>(this->get_string(name_index), this->get_string(descriptor_index));
 }
 
-u4 ConstantPool::get_integer(size_t idx) {
+s4 ConstantPool::get_integer(size_t idx) {
 	auto entry = this->get_entry(idx);
 
 	if (!entry.has_value() || (ConstantPoolType)entry->m_tag != ConstantPoolType::CONSTANT_Integer) {
@@ -178,7 +178,7 @@ u4 ConstantPool::get_integer(size_t idx) {
 	const auto bytes = entry->m_info;
 	const std::vector<u1> backwards = { bytes[3], bytes[2], bytes[1], bytes[0] };
 
-	return *(u4*)backwards.data();
+	return *(s4*)backwards.data();
 }
 
 float ConstantPool::get_float(size_t idx) {
@@ -220,7 +220,18 @@ long long ConstantPool::get_long(size_t idx) {
 	return *(long long*)reordered.data();
 }
 
-u2 ConstantPool::get_or_add_utf8(std::string str) {
+u2 ConstantPool::get_class(size_t idx) {
+	auto entry = this->get_entry(idx);
+
+	if (!entry.has_value() || (ConstantPoolType)entry->m_tag != ConstantPoolType::CONSTANT_Class) {
+		throw std::invalid_argument("Constant pool index is invalid or not a Class.");
+	}
+
+	const auto bytes = entry->m_info;
+	return (bytes[0] << 8) | bytes[1]; // name index
+}
+
+u2 ConstantPool::get_or_add_utf8(const std::string& str) {
 	if (this->m_cached_strings.contains(str)) {
 		return this->m_cached_strings.at(str);
 	}
@@ -251,7 +262,34 @@ u2 ConstantPool::get_or_add_utf8(std::string str) {
 	return new_idx;
 }
 
-u2 ConstantPool::get_or_add_integer(u4 integer) {
+u2 ConstantPool::get_or_add_class(const std::string& str) {
+	if (this->m_cached_classes.contains(str)) {
+		return this->m_cached_classes.at(str);
+	}
+
+	for (auto i = 1; i < this->m_entries.size() + 1; i++) {
+		const auto entry = this->get_entry(i);
+
+		if ((ConstantPoolType)entry->m_tag == ConstantPoolType::CONSTANT_Class) {
+			if (this->get_string(this->get_class(i)) == str) {
+				this->m_cached_classes[str] = i;
+				return i;
+			}
+		}
+	}
+
+	const auto name_index = this->get_or_add_utf8(str);
+	std::vector<u1> info = { (u1)((name_index >> 8) & 255), (u1)(name_index & 255) };
+
+	this->m_entries.push_back(ConstantPoolEntryInfo{ (int)ConstantPoolType::CONSTANT_Class, info });
+
+	const auto new_idx = (u2)this->m_entries.size();
+	this->m_cached_classes[str] = new_idx;
+
+	return new_idx;
+}
+
+u2 ConstantPool::get_or_add_integer(s4 integer) {
 	if (this->m_cached_integers.contains(integer)) {
 		return this->m_cached_integers.at(integer);
 	}

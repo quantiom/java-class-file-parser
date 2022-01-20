@@ -364,6 +364,8 @@ void CodeAttribute::set_code(std::vector<std::string> code) {
 	this->m_max_stack = 65535; // TODO
 	this->m_max_locals = 65535; // TODO
 
+	const auto constant_pool = this->m_java_class->get_constant_pool();
+
 	for (size_t i = 0; i < code.size(); i++) {
 		const auto line = code.at(i);
 		const auto lineNumber = std::to_string(i + 1);
@@ -391,10 +393,17 @@ void CodeAttribute::set_code(std::vector<std::string> code) {
 		switch (instruction) {
 			case BytecodeInstruction::GETSTATIC: {
 				if (arguments.size() != 2) {
-					throw std::invalid_argument("Invalid arguments to " + upper_case_instruction + " on line " + lineNumber + ". Expected 2 (class.field, descriptor), received " + std::to_string(arguments.size()));
+					throw std::invalid_argument("Invalid arguments to " + upper_case_instruction + " on line " + lineNumber + "\nExpected 2 arguments (class.field, descriptor), received " + std::to_string(arguments.size()));
 				}
 
+				const auto class_and_field = utils::split(arguments[0], ".");
 
+				if (class_and_field.size() != 2) {
+					throw std::invalid_argument("Invalid arguments to " + upper_case_instruction + " on line " + lineNumber + "\nFirst argument is not in format <class>.<field>\n" + "Example: GETSTATIC java/lang/System.out Ljava/io/PrintStream;");
+				}
+
+				const auto field_descriptor = arguments[1];
+				const auto class_cp_index = constant_pool->get_or_add_class(class_and_field[0]);
 
 				break;
 			}
